@@ -1,5 +1,3 @@
-# Script.Otmiza-o
-
 --[[ 
  ROBLOX PERFORMANCE OPTIMIZER
  Criado para melhorar FPS e reduzir lag
