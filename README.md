@@ -1,26 +1,28 @@
---[[=====================================================
- FPS OPTIMIZER
- Criador: Frostzn
- Versão: 1.2 Beta
-=======================================================]]
+--=====================================================
+-- FPS OPTIMIZER
+-- Criador: Frostzn
+-- Versão: 1.2 Beta
+--=====================================================
 
----------------- SERVICES ----------------
+---------------- SERVIÇOS ----------------
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
-local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
----------------- KEY SYSTEM ----------------
+---------------- CONFIG ----------------
 local ADMIN_KEY = "261120"
-math.randomseed(261120)
 
+---------------- KEYS FIXAS ----------------
+math.randomseed(261120)
 local Keys = {}
 for i = 1,1000 do
-	Keys["FPS-"..i.."-"..math.random(100000,999999)] = {uses = 0, max = 3}
+	local k = "FPS-"..i.."-"..math.random(100000,999999)
+	Keys[k] = {uses = 0, max = 3}
 end
 
 local function validateKey(key)
@@ -34,18 +36,18 @@ local function validateKey(key)
 	return false
 end
 
----------------- LOADING SCREEN ----------------
+---------------- LOADING ----------------
 local LoadGui = Instance.new("ScreenGui", PlayerGui)
-local lf = Instance.new("Frame", LoadGui)
-lf.Size = UDim2.fromScale(1,1)
-lf.BackgroundColor3 = Color3.fromRGB(10,10,10)
+local bg = Instance.new("Frame", LoadGui)
+bg.Size = UDim2.fromScale(1,1)
+bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
 
-local barBG = Instance.new("Frame", lf)
-barBG.Size = UDim2.new(0.4,0,0,12)
-barBG.Position = UDim2.new(0.3,0,0.55,0)
-barBG.BackgroundColor3 = Color3.fromRGB(40,40,40)
+local barBg = Instance.new("Frame", bg)
+barBg.Size = UDim2.new(0.4,0,0,10)
+barBg.Position = UDim2.new(0.3,0,0.55,0)
+barBg.BackgroundColor3 = Color3.fromRGB(40,40,40)
 
-local bar = Instance.new("Frame", barBG)
+local bar = Instance.new("Frame", barBg)
 bar.Size = UDim2.new(0,0,1,0)
 bar.BackgroundColor3 = Color3.fromRGB(0,200,120)
 
@@ -58,90 +60,113 @@ LoadGui:Destroy()
 
 ---------------- KEY UI ----------------
 local KeyGui = Instance.new("ScreenGui", PlayerGui)
-local kf = Instance.new("Frame", KeyGui)
-kf.Size = UDim2.fromOffset(350,220)
-kf.Position = UDim2.new(0.5,-175,0.5,-110)
-kf.BackgroundColor3 = Color3.fromRGB(20,20,20)
-Instance.new("UICorner", kf)
 
-local input = Instance.new("TextBox", kf)
-input.Size = UDim2.new(0.9,0,0,35)
-input.Position = UDim2.new(0.05,0,0.4,0)
-input.PlaceholderText = "Digite a key"
-input.TextColor3 = Color3.new(1,1,1)
-input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+local frame = Instance.new("Frame", KeyGui)
+frame.Size = UDim2.fromOffset(360,220)
+frame.Position = UDim2.new(0.5,-180,0.5,-110)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Instance.new("UICorner", frame)
 
-local btn = Instance.new("TextButton", kf)
-btn.Size = UDim2.new(0.9,0,0,35)
-btn.Position = UDim2.new(0.05,0,0.65,0)
-btn.Text = "CONFIRMAR"
-btn.BackgroundColor3 = Color3.fromRGB(0,170,100)
-btn.TextColor3 = Color3.new(1,1,1)
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "INSIRA A KEY"
+title.TextColor3 = Color3.fromRGB(0,255,120)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
 
----------------- MAIN MENU (FPS OPTIMIZER) ----------------
-local function openMenu()
-	local gui = Instance.new("ScreenGui", PlayerGui)
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.new(0.9,0,0,35)
+box.Position = UDim2.new(0.05,0,0.45,0)
+box.PlaceholderText = "Digite a key..."
+box.TextColor3 = Color3.new(1,1,1)
+box.BackgroundColor3 = Color3.fromRGB(40,40,40)
 
-	local main = Instance.new("Frame", gui)
-	main.Size = UDim2.fromOffset(420,460)
-	main.Position = UDim2.new(0.5,-210,0.5,-230)
-	main.BackgroundColor3 = Color3.fromRGB(18,18,18)
-	Instance.new("UICorner", main)
+local confirm = Instance.new("TextButton", frame)
+confirm.Size = UDim2.new(0.9,0,0,35)
+confirm.Position = UDim2.new(0.05,0,0.7,0)
+confirm.Text = "CONFIRMAR"
+confirm.BackgroundColor3 = Color3.fromRGB(0,170,100)
+confirm.TextColor3 = Color3.new(1,1,1)
 
-	-- DRAG
-	local dragging, dragInput, dragStart, startPos
-	main.InputBegan:Connect(function(i)
+---------------- MENU PRINCIPAL ----------------
+local function createMainMenu()
+
+	local Gui = Instance.new("ScreenGui", PlayerGui)
+
+	-- MAIN FRAME
+	local Main = Instance.new("Frame", Gui)
+	Main.Size = UDim2.fromOffset(420,480)
+	Main.Position = UDim2.new(0.5,-210,0.5,-240)
+	Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+	Instance.new("UICorner", Main)
+
+	-- DRAG COMPLETO
+	local dragging, dragStart, startPos
+	Main.InputBegan:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
 			dragStart = i.Position
-			startPos = main.Position
+			startPos = Main.Position
 		end
 	end)
-	main.InputEnded:Connect(function(i)
+	Main.InputEnded:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = false
 		end
 	end)
 	UIS.InputChanged:Connect(function(i)
-		if dragging and i == dragInput then
+		if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
 			local delta = i.Position - dragStart
-			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+			Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
 				startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
 	end)
-	main.InputChanged:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseMovement then
-			dragInput = i
-		end
-	end)
 
-	-- TITLE
-	local title = Instance.new("TextLabel", main)
-	title.Size = UDim2.new(1,0,0,40)
+	-- TOP BAR
+	local top = Instance.new("Frame", Main)
+	top.Size = UDim2.new(1,0,0,40)
+	top.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+	local title = Instance.new("TextLabel", top)
+	title.Size = UDim2.new(1,-80,1,0)
 	title.Text = "FPS OPTIMIZER v1.2 Beta"
 	title.TextColor3 = Color3.fromRGB(0,255,120)
 	title.BackgroundTransparency = 1
+	title.Font = Enum.Font.GothamBold
+
+	-- CLOSE
+	local close = Instance.new("TextButton", top)
+	close.Size = UDim2.fromOffset(30,30)
+	close.Position = UDim2.new(1,-35,0,5)
+	close.Text = "X"
+	close.BackgroundColor3 = Color3.fromRGB(170,60,60)
+
+	-- MINIMIZE
+	local minimize = Instance.new("TextButton", top)
+	minimize.Size = UDim2.fromOffset(30,30)
+	minimize.Position = UDim2.new(1,-70,0,5)
+	minimize.Text = "-"
+	minimize.BackgroundColor3 = Color3.fromRGB(90,90,90)
 
 	-- INFO
-	local info = Instance.new("TextLabel", main)
-	info.Position = UDim2.new(0,0,1,-30)
+	local info = Instance.new("TextLabel", Main)
 	info.Size = UDim2.new(1,0,0,30)
+	info.Position = UDim2.new(0,0,1,-30)
 	info.Text = "Criado por Frostzn | Mais funções em breve..."
 	info.TextSize = 12
 	info.TextColor3 = Color3.fromRGB(180,180,180)
 	info.BackgroundTransparency = 1
 
 	-- FPS COUNTER
-	local fpsLabel = Instance.new("TextLabel", gui)
-	fpsLabel.Position = UDim2.new(1,-110,0,10)
-	fpsLabel.Size = UDim2.fromOffset(100,30)
+	local fpsLabel = Instance.new("TextLabel", Gui)
+	fpsLabel.Position = UDim2.new(1,-120,0,10)
+	fpsLabel.Size = UDim2.fromOffset(110,30)
 	fpsLabel.BackgroundColor3 = Color3.fromRGB(0,0,0)
 	fpsLabel.TextColor3 = Color3.fromRGB(0,255,120)
 	fpsLabel.Visible = false
 
 	local fpsOn = false
-	local frames = 0
-	local last = tick()
+	local frames, last = 0, tick()
 	RunService.RenderStepped:Connect(function()
 		if fpsOn then
 			frames += 1
@@ -154,9 +179,9 @@ local function openMenu()
 	end)
 
 	-- TOGGLE FPS COUNTER
-	local fpsBtn = Instance.new("TextButton", main)
-	fpsBtn.Position = UDim2.new(0.05,0,0.15,0)
+	local fpsBtn = Instance.new("TextButton", Main)
 	fpsBtn.Size = UDim2.new(0.9,0,0,35)
+	fpsBtn.Position = UDim2.new(0.05,0,0.15,0)
 	fpsBtn.Text = "Contador de FPS: OFF"
 	fpsBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 	fpsBtn.TextColor3 = Color3.new(1,1,1)
@@ -166,16 +191,26 @@ local function openMenu()
 		fpsLabel.Visible = fpsOn
 		fpsBtn.Text = "Contador de FPS: "..(fpsOn and "ON" or "OFF")
 	end)
+
+	-- CLOSE CONFIRM
+	close.MouseButton1Click:Connect(function()
+		if confirm.Text ~= "CONFIRMAR" then return end
+		confirm.Text = "Fechar? Não poderá abrir novamente"
+	end)
+
+	minimize.MouseButton1Click:Connect(function()
+		Main.Visible = false
+	end)
 end
 
----------------- KEY CONFIRM ----------------
-btn.MouseButton1Click:Connect(function()
-	local ok, mode = validateKey(input.Text)
+---------------- CONFIRM KEY ----------------
+confirm.MouseButton1Click:Connect(function()
+	local ok = validateKey(box.Text)
 	if ok then
 		KeyGui:Destroy()
-		openMenu()
+		createMainMenu()
 	else
-		btn.Text = "KEY INVÁLIDA"
-		btn.BackgroundColor3 = Color3.fromRGB(170,60,60)
+		confirm.Text = "KEY INVÁLIDA"
+		confirm.BackgroundColor3 = Color3.fromRGB(170,60,60)
 	end
 end)
