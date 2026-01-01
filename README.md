@@ -50,7 +50,6 @@ Bar.Size = UDim2.new(0,0,1,0)
 Bar.BackgroundColor3 = Color3.fromRGB(0,170,90)
 Instance.new("UICorner", Bar)
 
--- LOADING ANIMATION
 TweenService:Create(
 	Bar,
 	TweenInfo.new(2, Enum.EasingStyle.Linear),
@@ -71,8 +70,8 @@ ScreenGui.ResetOnSpawn = false
 -- MAIN FRAME
 -------------------------------
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 360, 0, 500)
-Main.Position = UDim2.new(0.5, -180, 0.5, -250)
+Main.Size = UDim2.new(0, 360, 0, 560)
+Main.Position = UDim2.new(0.5, -180, 0.5, -280)
 Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 Main.BorderSizePixel = 0
 Main.Active = true
@@ -98,7 +97,7 @@ Instance.new("UICorner", Mini).CornerRadius = UDim.new(0,12)
 -- DRAG FUNCTION
 ------------------------------------------------
 local function MakeDraggable(obj)
-	local dragging, startPos, dragStart
+	local dragging, dragStart, startPos
 	obj.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
@@ -114,7 +113,10 @@ local function MakeDraggable(obj)
 	UIS.InputChanged:Connect(function(input)
 		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = input.Position - dragStart
-			obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+			obj.Position = UDim2.new(
+				startPos.X.Scale, startPos.X.Offset + delta.X,
+				startPos.Y.Scale, startPos.Y.Offset + delta.Y
+			)
 		end
 	end)
 end
@@ -167,9 +169,22 @@ Close.MouseButton1Click:Connect(function()
 end)
 
 ------------------------------------------------
--- SAVE ORIGINAL
+-- SAVE ORIGINAL VALUES
 ------------------------------------------------
-local originalFPS = settings().Rendering.QualityLevel
+local original = {
+	Lighting = {
+		GlobalShadows = Lighting.GlobalShadows,
+		Brightness = Lighting.Brightness,
+		FogEnd = Lighting.FogEnd,
+		Specular = Lighting.EnvironmentSpecularScale
+	},
+	Water = {
+		WaveSize = Terrain.WaterWaveSize,
+		WaveSpeed = Terrain.WaterWaveSpeed,
+		Reflectance = Terrain.WaterReflectance,
+		Transparency = Terrain.WaterTransparency
+	}
+}
 
 ------------------------------------------------
 -- TOGGLE SYSTEM
@@ -201,27 +216,10 @@ local function CreateToggle(text, y, onFunc, offFunc)
 end
 
 ------------------------------------------------
--- FPS LIMIT 120
+-- OPTIMIZATION FUNCTIONS
 ------------------------------------------------
-local fpsConnection
-local function FPSLimitOn()
-	fpsConnection = RunService.RenderStepped:Connect(function(dt)
-		local target = 1/120
-		if dt < target then
-			task.wait(target - dt)
-		end
-	end)
-end
 
-local function FPSLimitOff()
-	if fpsConnection then
-		fpsConnection:Disconnect()
-	end
-end
-
-------------------------------------------------
--- BASIC OPTIMIZATIONS
-------------------------------------------------
+-- FPS BOOST
 local function FPSBoostOn()
 	settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end
@@ -230,11 +228,120 @@ local function FPSBoostOff()
 	settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
 end
 
+-- FPS LIMIT 120
+local fpsConn
+local function FPSLimitOn()
+	fpsConn = RunService.RenderStepped:Connect(function(dt)
+		local target = 1/120
+		if dt < target then
+			task.wait(target - dt)
+		end
+	end)
+end
+
+local function FPSLimitOff()
+	if fpsConn then fpsConn:Disconnect() end
+end
+
+-- TEXTURES (LEVE)
+local function TextureOn()
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.CastShadow = false
+		end
+	end
+end
+
+local function TextureOff()
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.CastShadow = true
+		end
+	end
+end
+
+-- LIGHTING
+local function LightOn()
+	Lighting.GlobalShadows = false
+	Lighting.Brightness = 1
+	Lighting.FogEnd = 1e9
+	Lighting.EnvironmentSpecularScale = 0
+end
+
+local function LightOff()
+	Lighting.GlobalShadows = original.Lighting.GlobalShadows
+	Lighting.Brightness = original.Lighting.Brightness
+	Lighting.FogEnd = original.Lighting.FogEnd
+	Lighting.EnvironmentSpecularScale = original.Lighting.Specular
+end
+
+-- EFFECTS
+local function EffectsOn()
+	for _,v in pairs(Lighting:GetChildren()) do
+		if v:IsA("PostEffect") then v.Enabled = false end
+	end
+end
+
+local function EffectsOff()
+	for _,v in pairs(Lighting:GetChildren()) do
+		if v:IsA("PostEffect") then v.Enabled = true end
+	end
+end
+
+-- WATER
+local function WaterOn()
+	Terrain.WaterWaveSize = 0
+	Terrain.WaterWaveSpeed = 0
+	Terrain.WaterReflectance = 0
+	Terrain.WaterTransparency = 1
+end
+
+local function WaterOff()
+	Terrain.WaterWaveSize = original.Water.WaveSize
+	Terrain.WaterWaveSpeed = original.Water.WaveSpeed
+	Terrain.WaterReflectance = original.Water.Reflectance
+	Terrain.WaterTransparency = original.Water.Transparency
+end
+
+-- RENDER
+local function RenderOn()
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then v.CastShadow = false end
+	end
+end
+
+local function RenderOff()
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then v.CastShadow = true end
+	end
+end
+
+-- AUTO OPTIMIZER
+local autoConn
+local function AutoOn()
+	autoConn = RunService.RenderStepped:Connect(function()
+		if workspace:GetRealPhysicsFPS() < 50 then
+			FPSBoostOn()
+			TextureOn()
+		end
+	end)
+end
+
+local function AutoOff()
+	if autoConn then autoConn:Disconnect() end
+end
+
 ------------------------------------------------
 -- TOGGLES
 ------------------------------------------------
 CreateToggle("⚡ FPS BOOST", 60, FPSBoostOn, FPSBoostOff)
 CreateToggle("🎯 FPS LIMIT 120", 100, FPSLimitOn, FPSLimitOff)
+CreateToggle("🧱 TEXTURAS LEVES", 140, TextureOn, TextureOff)
+CreateToggle("💡 OTIMIZAR LUZ", 180, LightOn, LightOff)
+CreateToggle("🎨 REMOVER EFEITOS", 220, EffectsOn, EffectsOff)
+CreateToggle("🌊 OTIMIZAR ÁGUA", 260, WaterOn, WaterOff)
+CreateToggle("📉 REDUZIR RENDER", 300, RenderOn, RenderOff)
+CreateToggle("🤖 AUTO OPTIMIZER", 340, AutoOn, AutoOff)
 
 ------------------------------------------------
 -- CREDIT
@@ -248,4 +355,4 @@ Credit.TextSize = 12
 Credit.TextColor3 = Color3.fromRGB(150,150,150)
 Credit.BackgroundTransparency = 1
 
-print("FPS Optimizer iniciado | Criador: Frostzn")
+print("FPS Optimizer carregado | Criador: Frostzn")
