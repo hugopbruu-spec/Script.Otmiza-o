@@ -19,9 +19,50 @@ local Terrain = workspace:WaitForChild("Terrain")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
--------------------------------
--- GUI ROOT
--------------------------------
+------------------------------------------------
+-- LOADING SCREEN
+------------------------------------------------
+local LoadGui = Instance.new("ScreenGui", PlayerGui)
+LoadGui.IgnoreGuiInset = true
+LoadGui.ResetOnSpawn = false
+
+local LoadFrame = Instance.new("Frame", LoadGui)
+LoadFrame.Size = UDim2.new(1,0,1,0)
+LoadFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+
+local LoadText = Instance.new("TextLabel", LoadFrame)
+LoadText.Size = UDim2.new(1,0,0,50)
+LoadText.Position = UDim2.new(0,0,0.45,0)
+LoadText.Text = "Loading FPS Optimizer..."
+LoadText.Font = Enum.Font.GothamBold
+LoadText.TextSize = 20
+LoadText.TextColor3 = Color3.fromRGB(0,255,120)
+LoadText.BackgroundTransparency = 1
+
+local BarBack = Instance.new("Frame", LoadFrame)
+BarBack.Size = UDim2.new(0.4,0,0,10)
+BarBack.Position = UDim2.new(0.3,0,0.55,0)
+BarBack.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", BarBack)
+
+local Bar = Instance.new("Frame", BarBack)
+Bar.Size = UDim2.new(0,0,1,0)
+Bar.BackgroundColor3 = Color3.fromRGB(0,170,90)
+Instance.new("UICorner", Bar)
+
+-- LOADING ANIMATION
+TweenService:Create(
+	Bar,
+	TweenInfo.new(2, Enum.EasingStyle.Linear),
+	{Size = UDim2.new(1,0,1,0)}
+):Play()
+
+task.wait(2.2)
+LoadGui:Destroy()
+
+------------------------------------------------
+-- MAIN GUI
+------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui", PlayerGui)
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.ResetOnSpawn = false
@@ -30,8 +71,8 @@ ScreenGui.ResetOnSpawn = false
 -- MAIN FRAME
 -------------------------------
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 360, 0, 480)
-Main.Position = UDim2.new(0.5, -180, 0.5, -240)
+Main.Size = UDim2.new(0, 360, 0, 500)
+Main.Position = UDim2.new(0.5, -180, 0.5, -250)
 Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 Main.BorderSizePixel = 0
 Main.Active = true
@@ -41,8 +82,8 @@ Instance.new("UICorner", Main).CornerRadius = UDim.new(0,16)
 -- MINI FPS BUTTON
 -------------------------------
 local Mini = Instance.new("TextButton", ScreenGui)
-Mini.Size = UDim2.new(0, 50, 0, 50)
-Mini.Position = UDim2.new(0, 20, 0.5, -25)
+Mini.Size = UDim2.new(0,50,0,50)
+Mini.Position = UDim2.new(0,20,0.5,-25)
 Mini.Text = "FPS"
 Mini.Font = Enum.Font.GothamBold
 Mini.TextSize = 16
@@ -53,33 +94,27 @@ Mini.Visible = false
 Mini.Active = true
 Instance.new("UICorner", Mini).CornerRadius = UDim.new(0,12)
 
--------------------------------
--- DRAG (GENERIC)
--------------------------------
-local function MakeDraggable(frame)
-	local dragging, dragStart, startPos
-
-	frame.InputBegan:Connect(function(input)
+------------------------------------------------
+-- DRAG FUNCTION
+------------------------------------------------
+local function MakeDraggable(obj)
+	local dragging, startPos, dragStart
+	obj.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			dragStart = input.Position
-			startPos = frame.Position
+			startPos = obj.Position
 		end
 	end)
-
-	frame.InputEnded:Connect(function(input)
+	obj.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = false
 		end
 	end)
-
 	UIS.InputChanged:Connect(function(input)
 		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(
-				startPos.X.Scale, startPos.X.Offset + delta.X,
-				startPos.Y.Scale, startPos.Y.Offset + delta.Y
-			)
+			obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
 	end)
 end
@@ -87,9 +122,9 @@ end
 MakeDraggable(Main)
 MakeDraggable(Mini)
 
--------------------------------
+------------------------------------------------
 -- HEADER
--------------------------------
+------------------------------------------------
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1,0,0,40)
 Title.Text = "🚀 FPS OPTIMIZER"
@@ -98,15 +133,14 @@ Title.TextSize = 20
 Title.TextColor3 = Color3.fromRGB(0,255,120)
 Title.BackgroundTransparency = 1
 
--------------------------------
+------------------------------------------------
 -- CLOSE / MINIMIZE
--------------------------------
+------------------------------------------------
 local Close = Instance.new("TextButton", Main)
 Close.Size = UDim2.new(0,30,0,30)
 Close.Position = UDim2.new(1,-35,0,5)
 Close.Text = "X"
 Close.Font = Enum.Font.GothamBold
-Close.TextSize = 16
 Close.TextColor3 = Color3.fromRGB(255,90,90)
 Close.BackgroundTransparency = 1
 
@@ -115,7 +149,6 @@ Minimize.Size = UDim2.new(0,30,0,30)
 Minimize.Position = UDim2.new(1,-70,0,5)
 Minimize.Text = "-"
 Minimize.Font = Enum.Font.GothamBold
-Minimize.TextSize = 20
 Minimize.TextColor3 = Color3.fromRGB(220,220,220)
 Minimize.BackgroundTransparency = 1
 
@@ -133,12 +166,16 @@ Close.MouseButton1Click:Connect(function()
 	ScreenGui:Destroy()
 end)
 
--------------------------------
--- TOGGLE SYSTEM (REAL ON/OFF)
--------------------------------
+------------------------------------------------
+-- SAVE ORIGINAL
+------------------------------------------------
+local originalFPS = settings().Rendering.QualityLevel
+
+------------------------------------------------
+-- TOGGLE SYSTEM
+------------------------------------------------
 local function CreateToggle(text, y, onFunc, offFunc)
 	local enabled = false
-
 	local btn = Instance.new("TextButton", Main)
 	btn.Size = UDim2.new(0.9,0,0,34)
 	btn.Position = UDim2.new(0.05,0,0,y)
@@ -163,109 +200,45 @@ local function CreateToggle(text, y, onFunc, offFunc)
 	Refresh()
 end
 
--------------------------------
--- SAVE ORIGINAL VALUES
--------------------------------
-local original = {
-	Lighting = {
-		GlobalShadows = Lighting.GlobalShadows,
-		Brightness = Lighting.Brightness,
-		FogEnd = Lighting.FogEnd,
-		Specular = Lighting.EnvironmentSpecularScale
-	},
-	Water = {
-		WaveSize = Terrain.WaterWaveSize,
-		WaveSpeed = Terrain.WaterWaveSpeed,
-		Reflectance = Terrain.WaterReflectance,
-		Transparency = Terrain.WaterTransparency
-	}
-}
-
--------------------------------
--- OPTIMIZATIONS
--------------------------------
-local function FPSOn()
-	settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-end
-
-local function FPSOff()
-	settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
-end
-
--- TEXTURE (LEVE)
-local function TextureOn()
-	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("BasePart") then
-			v.CastShadow = false
-		end
-	end
-end
-
-local function TextureOff()
-	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("BasePart") then
-			v.CastShadow = true
-		end
-	end
-end
-
-local function LightOn()
-	Lighting.GlobalShadows = false
-	Lighting.Brightness = 1
-	Lighting.FogEnd = 1e9
-	Lighting.EnvironmentSpecularScale = 0
-end
-
-local function LightOff()
-	Lighting.GlobalShadows = original.Lighting.GlobalShadows
-	Lighting.Brightness = original.Lighting.Brightness
-	Lighting.FogEnd = original.Lighting.FogEnd
-	Lighting.EnvironmentSpecularScale = original.Lighting.Specular
-end
-
-local function WaterOn()
-	Terrain.WaterWaveSize = 0
-	Terrain.WaterWaveSpeed = 0
-	Terrain.WaterReflectance = 0
-	Terrain.WaterTransparency = 1
-end
-
-local function WaterOff()
-	Terrain.WaterWaveSize = original.Water.WaveSize
-	Terrain.WaterWaveSpeed = original.Water.WaveSpeed
-	Terrain.WaterReflectance = original.Water.Reflectance
-	Terrain.WaterTransparency = original.Water.Transparency
-end
-
--------------------------------
--- AUTO OPTIMIZER
--------------------------------
-local autoConn
-local function AutoOn()
-	autoConn = RunService.RenderStepped:Connect(function()
-		if workspace:GetRealPhysicsFPS() < 50 then
-			FPSOn()
-			TextureOn()
+------------------------------------------------
+-- FPS LIMIT 120
+------------------------------------------------
+local fpsConnection
+local function FPSLimitOn()
+	fpsConnection = RunService.RenderStepped:Connect(function(dt)
+		local target = 1/120
+		if dt < target then
+			task.wait(target - dt)
 		end
 	end)
 end
 
-local function AutoOff()
-	if autoConn then autoConn:Disconnect() end
+local function FPSLimitOff()
+	if fpsConnection then
+		fpsConnection:Disconnect()
+	end
 end
 
--------------------------------
--- TOGGLES
--------------------------------
-CreateToggle("⚡ FPS BOOST", 60, FPSOn, FPSOff)
-CreateToggle("🧱 TEXTURAS LEVES", 100, TextureOn, TextureOff)
-CreateToggle("💡 OTIMIZAR LUZ", 140, LightOn, LightOff)
-CreateToggle("🌊 OTIMIZAR ÁGUA", 180, WaterOn, WaterOff)
-CreateToggle("🤖 AUTO OPTIMIZER", 220, AutoOn, AutoOff)
+------------------------------------------------
+-- BASIC OPTIMIZATIONS
+------------------------------------------------
+local function FPSBoostOn()
+	settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+end
 
--------------------------------
+local function FPSBoostOff()
+	settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+end
+
+------------------------------------------------
+-- TOGGLES
+------------------------------------------------
+CreateToggle("⚡ FPS BOOST", 60, FPSBoostOn, FPSBoostOff)
+CreateToggle("🎯 FPS LIMIT 120", 100, FPSLimitOn, FPSLimitOff)
+
+------------------------------------------------
 -- CREDIT
--------------------------------
+------------------------------------------------
 local Credit = Instance.new("TextLabel", Main)
 Credit.Size = UDim2.new(1,0,0,18)
 Credit.Position = UDim2.new(0,0,1,-22)
@@ -275,4 +248,4 @@ Credit.TextSize = 12
 Credit.TextColor3 = Color3.fromRGB(150,150,150)
 Credit.BackgroundTransparency = 1
 
-print("FPS Optimizer carregado | Criador: Frostzn")
+print("FPS Optimizer iniciado | Criador: Frostzn")
