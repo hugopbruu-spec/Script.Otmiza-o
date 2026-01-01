@@ -1,7 +1,7 @@
 --[[
  ROBLOX FPS OPTIMIZER
  Criador: Frostzn
- Script Final Completo
+ Script Final Completo e Corrigido
 ]]
 
 --------------------------------------------------
@@ -131,38 +131,51 @@ Mini.TextColor3 = Color3.new(1,1,1)
 Mini.BackgroundColor3 = Color3.fromRGB(0,170,90)
 Mini.Visible = false
 Mini.Active = true
+Mini.ZIndex = 20
 Instance.new("UICorner", Mini)
 Drag(Mini)
 
 --------------------------------------------------
--- HEADER
+-- HEADER BAR (CORRIGIDO)
 --------------------------------------------------
-local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(1,0,0,40)
+local Header = Instance.new("Frame", Main)
+Header.Size = UDim2.new(1,0,0,44)
+Header.BackgroundColor3 = Color3.fromRGB(22,22,22)
+Header.BorderSizePixel = 0
+Header.ZIndex = 10
+Instance.new("UICorner", Header)
+
+Drag(Header)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(1,-90,1,0)
+Title.Position = UDim2.new(0,12,0,0)
 Title.Text = "🚀 FPS OPTIMIZER"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 20
+Title.TextSize = 18
 Title.TextColor3 = Color3.fromRGB(0,255,120)
 Title.BackgroundTransparency = 1
+Title.ZIndex = 11
 
---------------------------------------------------
--- BUTTONS
---------------------------------------------------
-local Close = Instance.new("TextButton", Main)
-Close.Size = UDim2.new(0,30,0,30)
-Close.Position = UDim2.new(1,-35,0,5)
-Close.Text = "X"
-Close.Font = Enum.Font.GothamBold
-Close.TextColor3 = Color3.fromRGB(255,80,80)
-Close.BackgroundTransparency = 1
-
-local Minimize = Instance.new("TextButton", Main)
+local Minimize = Instance.new("TextButton", Header)
 Minimize.Size = UDim2.new(0,30,0,30)
-Minimize.Position = UDim2.new(1,-70,0,5)
+Minimize.Position = UDim2.new(1,-70,0,7)
 Minimize.Text = "-"
 Minimize.Font = Enum.Font.GothamBold
+Minimize.TextSize = 20
 Minimize.TextColor3 = Color3.fromRGB(220,220,220)
 Minimize.BackgroundTransparency = 1
+Minimize.ZIndex = 11
+
+local Close = Instance.new("TextButton", Header)
+Close.Size = UDim2.new(0,30,0,30)
+Close.Position = UDim2.new(1,-35,0,7)
+Close.Text = "X"
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 16
+Close.TextColor3 = Color3.fromRGB(255,80,80)
+Close.BackgroundTransparency = 1
+Close.ZIndex = 11
 
 Minimize.MouseButton1Click:Connect(function()
 	Main.Visible = false
@@ -182,12 +195,13 @@ end)
 -- SCROLL
 --------------------------------------------------
 local Scroll = Instance.new("ScrollingFrame", Main)
-Scroll.Size = UDim2.new(1,-20,1,-90)
-Scroll.Position = UDim2.new(0,10,0,50)
+Scroll.Size = UDim2.new(1,-20,1,-100)
+Scroll.Position = UDim2.new(0,10,0,54)
 Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Scroll.CanvasSize = UDim2.new(0,0,0,0)
 Scroll.BackgroundTransparency = 1
 Scroll.ScrollBarImageTransparency = 0.4
+Scroll.ZIndex = 5
 
 local Layout = Instance.new("UIListLayout", Scroll)
 Layout.Padding = UDim.new(0,8)
@@ -205,6 +219,7 @@ local function CreateToggle(text, onFunc, offFunc)
 	btn.TextColor3 = Color3.fromRGB(240,240,240)
 	btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 	btn.BorderSizePixel = 0
+	btn.ZIndex = 6
 	Instance.new("UICorner", btn)
 
 	btn.MouseButton1Click:Connect(function()
@@ -222,7 +237,7 @@ local function CreateToggle(text, onFunc, offFunc)
 end
 
 --------------------------------------------------
--- FPS LIMIT 120 (CORRIGIDO)
+-- FPS LIMIT 120
 --------------------------------------------------
 local fpsConn
 local function FPS120On()
@@ -298,3 +313,4 @@ Credit.Font = Enum.Font.Gotham
 Credit.TextSize = 12
 Credit.TextColor3 = Color3.fromRGB(150,150,150)
 Credit.BackgroundTransparency = 1
+Credit.ZIndex = 10
