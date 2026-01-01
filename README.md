@@ -1,6 +1,6 @@
 --[[
-  ROBLOX PERFORMANCE OPTIMIZER
-  Criador: Frostzn
+ ROBLOX PERFORMANCE OPTIMIZER
+ Criador: Frostzn
 ]]
 
 -------------------------------
@@ -14,16 +14,15 @@ local UIS = game:GetService("UserInputService")
 local Terrain = workspace:WaitForChild("Terrain")
 
 -------------------------------
--- PLAYER READY
+-- PLAYER
 -------------------------------
-local player = Players.LocalPlayer or Players.PlayerAdded:Wait()
+local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
 -------------------------------
 -- GUI ROOT
 -------------------------------
 local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-ScreenGui.Name = "FPSOptimizer"
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.ResetOnSpawn = false
 
@@ -31,58 +30,62 @@ ScreenGui.ResetOnSpawn = false
 -- MAIN FRAME
 -------------------------------
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 360, 0, 470)
-Main.Position = UDim2.new(0.5, -180, 0.5, -235)
-Main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Main.Size = UDim2.new(0, 360, 0, 480)
+Main.Position = UDim2.new(0.5, -180, 0.5, -240)
+Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 Main.BorderSizePixel = 0
 Main.Active = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,16)
 
 -------------------------------
--- MINI BUTTON (FPS)
+-- MINI FPS BUTTON
 -------------------------------
 local Mini = Instance.new("TextButton", ScreenGui)
 Mini.Size = UDim2.new(0, 50, 0, 50)
 Mini.Position = UDim2.new(0, 20, 0.5, -25)
 Mini.Text = "FPS"
-Mini.Visible = false
 Mini.Font = Enum.Font.GothamBold
 Mini.TextSize = 16
 Mini.TextColor3 = Color3.new(1,1,1)
 Mini.BackgroundColor3 = Color3.fromRGB(0,170,90)
 Mini.BorderSizePixel = 0
+Mini.Visible = false
+Mini.Active = true
 Instance.new("UICorner", Mini).CornerRadius = UDim.new(0,12)
 
 -------------------------------
--- DRAG SYSTEM
+-- DRAG (GENERIC)
 -------------------------------
-local dragging, dragStart, startPos
-Main.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragStart = input.Position
-		startPos = Main.Position
-		dragging = true
-	end
-end)
+local function MakeDraggable(frame)
+	local dragging, dragStart, startPos
 
-Main.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = false
-	end
-end)
+	frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+		end
+	end)
 
-UIS.InputChanged:Connect(function(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		local delta = input.Position - dragStart
-		Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-	end
-end)
+	frame.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end)
 
--------------------------------
--- ANIMAÇÃO ABERTURA
--------------------------------
-Main.BackgroundTransparency = 1
-TweenService:Create(Main, TweenInfo.new(0.6, Enum.EasingStyle.Back), {BackgroundTransparency = 0}):Play()
+	UIS.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - dragStart
+			frame.Position = UDim2.new(
+				startPos.X.Scale, startPos.X.Offset + delta.X,
+				startPos.Y.Scale, startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+end
+
+MakeDraggable(Main)
+MakeDraggable(Mini)
 
 -------------------------------
 -- HEADER
@@ -96,13 +99,14 @@ Title.TextColor3 = Color3.fromRGB(0,255,120)
 Title.BackgroundTransparency = 1
 
 -------------------------------
--- CLOSE & MINIMIZE
+-- CLOSE / MINIMIZE
 -------------------------------
 local Close = Instance.new("TextButton", Main)
 Close.Size = UDim2.new(0,30,0,30)
 Close.Position = UDim2.new(1,-35,0,5)
 Close.Text = "X"
 Close.Font = Enum.Font.GothamBold
+Close.TextSize = 16
 Close.TextColor3 = Color3.fromRGB(255,90,90)
 Close.BackgroundTransparency = 1
 
@@ -111,12 +115,10 @@ Minimize.Size = UDim2.new(0,30,0,30)
 Minimize.Position = UDim2.new(1,-70,0,5)
 Minimize.Text = "-"
 Minimize.Font = Enum.Font.GothamBold
-Minimize.TextColor3 = Color3.fromRGB(200,200,200)
+Minimize.TextSize = 20
+Minimize.TextColor3 = Color3.fromRGB(220,220,220)
 Minimize.BackgroundTransparency = 1
 
--------------------------------
--- MINIMIZE / RESTORE
--------------------------------
 Minimize.MouseButton1Click:Connect(function()
 	Main.Visible = false
 	Mini.Visible = true
@@ -132,81 +134,107 @@ Close.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------
--- TOGGLE BUTTON
+-- TOGGLE SYSTEM (REAL ON/OFF)
 -------------------------------
 local function CreateToggle(text, y, onFunc, offFunc)
 	local enabled = false
+
 	local btn = Instance.new("TextButton", Main)
 	btn.Size = UDim2.new(0.9,0,0,34)
 	btn.Position = UDim2.new(0.05,0,0,y)
 	btn.Font = Enum.Font.Gotham
 	btn.TextSize = 14
+	btn.TextColor3 = Color3.fromRGB(240,240,240)
+	btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 	btn.BorderSizePixel = 0
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
 
-	local function Update()
-		btn.Text = text .. (enabled and " [ON]" or " [OFF]")
-		btn.BackgroundColor3 = enabled and Color3.fromRGB(0,170,90) or Color3.fromRGB(40,40,40)
+	local function Refresh()
+		btn.Text = text .. (enabled and "  [ON]" or "  [OFF]")
+		btn.BackgroundColor3 = enabled and Color3.fromRGB(0,160,90) or Color3.fromRGB(40,40,40)
 	end
 
 	btn.MouseButton1Click:Connect(function()
 		enabled = not enabled
-		if enabled then onFunc() elseif offFunc then offFunc() end
-		Update()
+		if enabled then onFunc() else if offFunc then offFunc() end end
+		Refresh()
 	end)
 
-	Update()
+	Refresh()
 end
+
+-------------------------------
+-- SAVE ORIGINAL VALUES
+-------------------------------
+local original = {
+	Lighting = {
+		GlobalShadows = Lighting.GlobalShadows,
+		Brightness = Lighting.Brightness,
+		FogEnd = Lighting.FogEnd,
+		Specular = Lighting.EnvironmentSpecularScale
+	},
+	Water = {
+		WaveSize = Terrain.WaterWaveSize,
+		WaveSpeed = Terrain.WaterWaveSpeed,
+		Reflectance = Terrain.WaterReflectance,
+		Transparency = Terrain.WaterTransparency
+	}
+}
 
 -------------------------------
 -- OPTIMIZATIONS
 -------------------------------
-local function FPSBoost()
+local function FPSOn()
 	settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end
 
-local function OptimizeTextures()
+local function FPSOff()
+	settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+end
+
+-- TEXTURE (LEVE)
+local function TextureOn()
 	for _,v in pairs(workspace:GetDescendants()) do
 		if v:IsA("BasePart") then
-			v.Material = Enum.Material.Plastic
 			v.CastShadow = false
 		end
 	end
 end
 
-local function DisableParticles()
+local function TextureOff()
 	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("ParticleEmitter") or v:IsA("Trail") then
-			v.Enabled = false
+		if v:IsA("BasePart") then
+			v.CastShadow = true
 		end
 	end
 end
 
-local function OptimizeLighting()
+local function LightOn()
 	Lighting.GlobalShadows = false
 	Lighting.Brightness = 1
 	Lighting.FogEnd = 1e9
 	Lighting.EnvironmentSpecularScale = 0
 end
 
-local function RemoveEffects()
-	for _,v in pairs(Lighting:GetChildren()) do
-		if v:IsA("PostEffect") then v.Enabled = false end
-	end
+local function LightOff()
+	Lighting.GlobalShadows = original.Lighting.GlobalShadows
+	Lighting.Brightness = original.Lighting.Brightness
+	Lighting.FogEnd = original.Lighting.FogEnd
+	Lighting.EnvironmentSpecularScale = original.Lighting.Specular
 end
 
--- ✅ WATER FIX REAL
-local function OptimizeWater()
+local function WaterOn()
 	Terrain.WaterWaveSize = 0
 	Terrain.WaterWaveSpeed = 0
 	Terrain.WaterReflectance = 0
 	Terrain.WaterTransparency = 1
 end
 
-local function ReduceRender()
-	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("BasePart") then v.CastShadow = false end
-	end
+local function WaterOff()
+	Terrain.WaterWaveSize = original.Water.WaveSize
+	Terrain.WaterWaveSpeed = original.Water.WaveSpeed
+	Terrain.WaterReflectance = original.Water.Reflectance
+	Terrain.WaterTransparency = original.Water.Transparency
 end
 
 -------------------------------
@@ -216,9 +244,8 @@ local autoConn
 local function AutoOn()
 	autoConn = RunService.RenderStepped:Connect(function()
 		if workspace:GetRealPhysicsFPS() < 50 then
-			FPSBoost()
-			OptimizeTextures()
-			DisableParticles()
+			FPSOn()
+			TextureOn()
 		end
 	end)
 end
@@ -230,21 +257,18 @@ end
 -------------------------------
 -- TOGGLES
 -------------------------------
-CreateToggle("⚡ FPS BOOST", 60, FPSBoost)
-CreateToggle("🧱 TEXTURAS LEVES", 100, OptimizeTextures)
-CreateToggle("✨ REMOVER PARTÍCULAS", 140, DisableParticles)
-CreateToggle("💡 OTIMIZAR LUZ", 180, OptimizeLighting)
-CreateToggle("🎨 REMOVER EFEITOS", 220, RemoveEffects)
-CreateToggle("🌊 OTIMIZAR ÁGUA", 260, OptimizeWater)
-CreateToggle("📉 REDUZIR RENDER", 300, ReduceRender)
-CreateToggle("🤖 AUTO OPTIMIZER", 340, AutoOn, AutoOff)
+CreateToggle("⚡ FPS BOOST", 60, FPSOn, FPSOff)
+CreateToggle("🧱 TEXTURAS LEVES", 100, TextureOn, TextureOff)
+CreateToggle("💡 OTIMIZAR LUZ", 140, LightOn, LightOff)
+CreateToggle("🌊 OTIMIZAR ÁGUA", 180, WaterOn, WaterOff)
+CreateToggle("🤖 AUTO OPTIMIZER", 220, AutoOn, AutoOff)
 
 -------------------------------
 -- CREDIT
 -------------------------------
 local Credit = Instance.new("TextLabel", Main)
-Credit.Size = UDim2.new(1,0,0,20)
-Credit.Position = UDim2.new(0,0,1,-25)
+Credit.Size = UDim2.new(1,0,0,18)
+Credit.Position = UDim2.new(0,0,1,-22)
 Credit.Text = "Criador: Frostzn"
 Credit.Font = Enum.Font.Gotham
 Credit.TextSize = 12
