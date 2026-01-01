@@ -356,3 +356,4 @@ Credit.TextColor3 = Color3.fromRGB(150,150,150)
 Credit.BackgroundTransparency = 1
 
 print("FPS Optimizer carregado | Criador: Frostzn")
+
