@@ -1,20 +1,40 @@
 --[[
  ROBLOX FPS OPTIMIZER
  Criador: Frostzn
+ Script Final Completo
 ]]
 
 --------------------------------------------------
 -- SERVICES
 --------------------------------------------------
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
 local Terrain = workspace:WaitForChild("Terrain")
 
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
+
+--------------------------------------------------
+-- SAVE ORIGINAL VALUES
+--------------------------------------------------
+local Original = {
+	Quality = settings().Rendering.QualityLevel,
+	Lighting = {
+		GlobalShadows = Lighting.GlobalShadows,
+		Brightness = Lighting.Brightness,
+		FogEnd = Lighting.FogEnd,
+		Specular = Lighting.EnvironmentSpecularScale
+	},
+	Water = {
+		WaveSize = Terrain.WaterWaveSize,
+		WaveSpeed = Terrain.WaterWaveSpeed,
+		Transparency = Terrain.WaterTransparency,
+		Reflectance = Terrain.WaterReflectance
+	}
+}
 
 --------------------------------------------------
 -- LOADING SCREEN
@@ -66,10 +86,10 @@ Main.Position = UDim2.new(0.5,-180,0.5,-280)
 Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 Main.Active = true
 Main.BorderSizePixel = 0
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0,16)
+Instance.new("UICorner", Main)
 
 --------------------------------------------------
--- DRAG
+-- DRAG FUNCTION
 --------------------------------------------------
 local function Drag(gui)
 	local dragging, startPos, startInput
@@ -99,6 +119,22 @@ end
 Drag(Main)
 
 --------------------------------------------------
+-- MINI FPS BUTTON
+--------------------------------------------------
+local Mini = Instance.new("TextButton", ScreenGui)
+Mini.Size = UDim2.new(0,50,0,50)
+Mini.Position = UDim2.new(0,20,0.5,-25)
+Mini.Text = "FPS"
+Mini.Font = Enum.Font.GothamBold
+Mini.TextSize = 16
+Mini.TextColor3 = Color3.new(1,1,1)
+Mini.BackgroundColor3 = Color3.fromRGB(0,170,90)
+Mini.Visible = false
+Mini.Active = true
+Instance.new("UICorner", Mini)
+Drag(Mini)
+
+--------------------------------------------------
 -- HEADER
 --------------------------------------------------
 local Title = Instance.new("TextLabel", Main)
@@ -110,25 +146,57 @@ Title.TextColor3 = Color3.fromRGB(0,255,120)
 Title.BackgroundTransparency = 1
 
 --------------------------------------------------
--- SCROLL AREA (CORREÇÃO PRINCIPAL)
+-- BUTTONS
+--------------------------------------------------
+local Close = Instance.new("TextButton", Main)
+Close.Size = UDim2.new(0,30,0,30)
+Close.Position = UDim2.new(1,-35,0,5)
+Close.Text = "X"
+Close.Font = Enum.Font.GothamBold
+Close.TextColor3 = Color3.fromRGB(255,80,80)
+Close.BackgroundTransparency = 1
+
+local Minimize = Instance.new("TextButton", Main)
+Minimize.Size = UDim2.new(0,30,0,30)
+Minimize.Position = UDim2.new(1,-70,0,5)
+Minimize.Text = "-"
+Minimize.Font = Enum.Font.GothamBold
+Minimize.TextColor3 = Color3.fromRGB(220,220,220)
+Minimize.BackgroundTransparency = 1
+
+Minimize.MouseButton1Click:Connect(function()
+	Main.Visible = false
+	Mini.Visible = true
+end)
+
+Mini.MouseButton1Click:Connect(function()
+	Main.Visible = true
+	Mini.Visible = false
+end)
+
+Close.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+--------------------------------------------------
+-- SCROLL
 --------------------------------------------------
 local Scroll = Instance.new("ScrollingFrame", Main)
 Scroll.Size = UDim2.new(1,-20,1,-90)
 Scroll.Position = UDim2.new(0,10,0,50)
-Scroll.CanvasSize = UDim2.new(0,0,0,0)
-Scroll.ScrollBarImageTransparency = 0.4
-Scroll.BackgroundTransparency = 1
 Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scroll.CanvasSize = UDim2.new(0,0,0,0)
+Scroll.BackgroundTransparency = 1
+Scroll.ScrollBarImageTransparency = 0.4
 
 local Layout = Instance.new("UIListLayout", Scroll)
-Layout.Padding = UDim.new(0,10)
+Layout.Padding = UDim.new(0,8)
 
 --------------------------------------------------
--- TOGGLE FUNCTION
+-- TOGGLE CREATOR
 --------------------------------------------------
 local function CreateToggle(text, onFunc, offFunc)
 	local enabled = false
-
 	local btn = Instance.new("TextButton", Scroll)
 	btn.Size = UDim2.new(1,0,0,36)
 	btn.Text = text .. " [OFF]"
@@ -154,26 +222,32 @@ local function CreateToggle(text, onFunc, offFunc)
 end
 
 --------------------------------------------------
--- ORIGINAL VALUES
+-- FPS LIMIT 120 (CORRIGIDO)
 --------------------------------------------------
-local originalWater = {
-	Terrain.WaterWaveSize,
-	Terrain.WaterWaveSpeed,
-	Terrain.WaterTransparency
-}
+local fpsConn
+local function FPS120On()
+	fpsConn = RunService.RenderStepped:Connect(function(dt)
+		local target = 1/120
+		if dt < target then
+			task.wait(target - dt)
+		end
+	end)
+end
+
+local function FPS120Off()
+	if fpsConn then fpsConn:Disconnect() end
+end
 
 --------------------------------------------------
--- FUNCTIONS
+-- TOGGLES
 --------------------------------------------------
 CreateToggle("⚡ FPS Boost", function()
 	settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
 end, function()
-	settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+	settings().Rendering.QualityLevel = Original.Quality
 end)
 
-CreateToggle("🎯 Limitar FPS em 120", function()
-	RunService:Set3dRenderingEnabled(true)
-end)
+CreateToggle("🎯 Limite de FPS: 120", FPS120On, FPS120Off)
 
 CreateToggle("🧱 Texturas Leves", function()
 	for _,v in pairs(workspace:GetDescendants()) do
@@ -187,8 +261,10 @@ end)
 
 CreateToggle("💡 Otimizar Iluminação", function()
 	Lighting.GlobalShadows = false
+	Lighting.EnvironmentSpecularScale = 0
 end, function()
-	Lighting.GlobalShadows = true
+	Lighting.GlobalShadows = Original.Lighting.GlobalShadows
+	Lighting.EnvironmentSpecularScale = Original.Lighting.Specular
 end)
 
 CreateToggle("🎨 Remover Efeitos", function()
@@ -206,13 +282,9 @@ CreateToggle("🌊 Otimizar Água", function()
 	Terrain.WaterWaveSpeed = 0
 	Terrain.WaterTransparency = 1
 end, function()
-	Terrain.WaterWaveSize = originalWater[1]
-	Terrain.WaterWaveSpeed = originalWater[2]
-	Terrain.WaterTransparency = originalWater[3]
-end)
-
-CreateToggle("🤖 Auto Optimizer", function()
-	print("Auto Optimizer Ativo")
+	Terrain.WaterWaveSize = Original.Water.WaveSize
+	Terrain.WaterWaveSpeed = Original.Water.WaveSpeed
+	Terrain.WaterTransparency = Original.Water.Transparency
 end)
 
 --------------------------------------------------
@@ -220,7 +292,7 @@ end)
 --------------------------------------------------
 local Credit = Instance.new("TextLabel", Main)
 Credit.Size = UDim2.new(1,0,0,20)
-Credit.Position = UDim2.new(0,0,1,-25)
+Credit.Position = UDim2.new(0,0,1,-22)
 Credit.Text = "Criador: Frostzn"
 Credit.Font = Enum.Font.Gotham
 Credit.TextSize = 12
