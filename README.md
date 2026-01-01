@@ -1,7 +1,7 @@
 --[[
  ROBLOX FPS OPTIMIZER
  Criador: Frostzn
- Script Final Completo e Corrigido
+ Versão: 1.2 Beta
 ]]
 
 --------------------------------------------------
@@ -24,15 +24,12 @@ local Original = {
 	Quality = settings().Rendering.QualityLevel,
 	Lighting = {
 		GlobalShadows = Lighting.GlobalShadows,
-		Brightness = Lighting.Brightness,
-		FogEnd = Lighting.FogEnd,
 		Specular = Lighting.EnvironmentSpecularScale
 	},
 	Water = {
 		WaveSize = Terrain.WaterWaveSize,
 		WaveSpeed = Terrain.WaterWaveSpeed,
-		Transparency = Terrain.WaterTransparency,
-		Reflectance = Terrain.WaterReflectance
+		Transparency = Terrain.WaterTransparency
 	}
 }
 
@@ -50,7 +47,7 @@ LoadFrame.BackgroundColor3 = Color3.fromRGB(12,12,12)
 local LoadText = Instance.new("TextLabel", LoadFrame)
 LoadText.Size = UDim2.new(1,0,0,40)
 LoadText.Position = UDim2.new(0,0,0.45,0)
-LoadText.Text = "Carregando FPS Optimizer..."
+LoadText.Text = "Carregando FPS Optimizer v1.2 Beta..."
 LoadText.Font = Enum.Font.GothamBold
 LoadText.TextSize = 18
 LoadText.TextColor3 = Color3.fromRGB(0,255,120)
@@ -89,34 +86,34 @@ Main.BorderSizePixel = 0
 Instance.new("UICorner", Main)
 
 --------------------------------------------------
--- DRAG FUNCTION
+-- DRAG (APENAS MAIN)
 --------------------------------------------------
-local function Drag(gui)
+do
 	local dragging, startPos, startInput
-	gui.InputBegan:Connect(function(i)
+	Main.InputBegan:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
-			startPos = gui.Position
+			startPos = Main.Position
 			startInput = i.Position
 		end
 	end)
+
 	UIS.InputChanged:Connect(function(i)
 		if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
 			local delta = i.Position - startInput
-			gui.Position = UDim2.new(
+			Main.Position = UDim2.new(
 				startPos.X.Scale, startPos.X.Offset + delta.X,
 				startPos.Y.Scale, startPos.Y.Offset + delta.Y
 			)
 		end
 	end)
+
 	UIS.InputEnded:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = false
 		end
 	end)
 end
-
-Drag(Main)
 
 --------------------------------------------------
 -- MINI FPS BUTTON
@@ -133,10 +130,9 @@ Mini.Visible = false
 Mini.Active = true
 Mini.ZIndex = 20
 Instance.new("UICorner", Mini)
-Drag(Mini)
 
 --------------------------------------------------
--- HEADER BAR (CORRIGIDO)
+-- HEADER
 --------------------------------------------------
 local Header = Instance.new("Frame", Main)
 Header.Size = UDim2.new(1,0,0,44)
@@ -145,14 +141,12 @@ Header.BorderSizePixel = 0
 Header.ZIndex = 10
 Instance.new("UICorner", Header)
 
-Drag(Header)
-
 local Title = Instance.new("TextLabel", Header)
-Title.Size = UDim2.new(1,-90,1,0)
+Title.Size = UDim2.new(1,-100,1,0)
 Title.Position = UDim2.new(0,12,0,0)
-Title.Text = "🚀 FPS OPTIMIZER"
+Title.Text = "🚀 FPS OPTIMIZER  |  v1.2 Beta"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
+Title.TextSize = 16
 Title.TextColor3 = Color3.fromRGB(0,255,120)
 Title.BackgroundTransparency = 1
 Title.ZIndex = 11
@@ -177,31 +171,16 @@ Close.TextColor3 = Color3.fromRGB(255,80,80)
 Close.BackgroundTransparency = 1
 Close.ZIndex = 11
 
-Minimize.MouseButton1Click:Connect(function()
-	Main.Visible = false
-	Mini.Visible = true
-end)
-
-Mini.MouseButton1Click:Connect(function()
-	Main.Visible = true
-	Mini.Visible = false
-end)
-
-Close.MouseButton1Click:Connect(function()
-	ScreenGui:Destroy()
-end)
-
 --------------------------------------------------
 -- SCROLL
 --------------------------------------------------
 local Scroll = Instance.new("ScrollingFrame", Main)
-Scroll.Size = UDim2.new(1,-20,1,-100)
+Scroll.Size = UDim2.new(1,-20,1,-110)
 Scroll.Position = UDim2.new(0,10,0,54)
 Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Scroll.CanvasSize = UDim2.new(0,0,0,0)
 Scroll.BackgroundTransparency = 1
 Scroll.ScrollBarImageTransparency = 0.4
-Scroll.ZIndex = 5
 
 local Layout = Instance.new("UIListLayout", Scroll)
 Layout.Padding = UDim.new(0,8)
@@ -209,20 +188,21 @@ Layout.Padding = UDim.new(0,8)
 --------------------------------------------------
 -- TOGGLE CREATOR
 --------------------------------------------------
-local function CreateToggle(text, onFunc, offFunc)
+local function CreateToggle(text, onFunc, offFunc, locked)
 	local enabled = false
 	local btn = Instance.new("TextButton", Scroll)
 	btn.Size = UDim2.new(1,0,0,36)
-	btn.Text = text .. " [OFF]"
 	btn.Font = Enum.Font.Gotham
 	btn.TextSize = 14
 	btn.TextColor3 = Color3.fromRGB(240,240,240)
-	btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	btn.BackgroundColor3 = locked and Color3.fromRGB(60,60,60) or Color3.fromRGB(40,40,40)
 	btn.BorderSizePixel = 0
-	btn.ZIndex = 6
 	Instance.new("UICorner", btn)
 
+	btn.Text = locked and text or text .. " [OFF]"
+
 	btn.MouseButton1Click:Connect(function()
+		if locked then return end
 		enabled = not enabled
 		if enabled then
 			onFunc()
@@ -282,16 +262,6 @@ end, function()
 	Lighting.EnvironmentSpecularScale = Original.Lighting.Specular
 end)
 
-CreateToggle("🎨 Remover Efeitos", function()
-	for _,v in pairs(Lighting:GetChildren()) do
-		if v:IsA("PostEffect") then v.Enabled = false end
-	end
-end, function()
-	for _,v in pairs(Lighting:GetChildren()) do
-		if v:IsA("PostEffect") then v.Enabled = true end
-	end
-end)
-
 CreateToggle("🌊 Otimizar Água", function()
 	Terrain.WaterWaveSize = 0
 	Terrain.WaterWaveSpeed = 0
@@ -300,6 +270,38 @@ end, function()
 	Terrain.WaterWaveSize = Original.Water.WaveSize
 	Terrain.WaterWaveSpeed = Original.Water.WaveSpeed
 	Terrain.WaterTransparency = Original.Water.Transparency
+end)
+
+CreateToggle("🔒 Mais funções em breve...", function() end, nil, true)
+
+--------------------------------------------------
+-- CONFIRM CLOSE
+--------------------------------------------------
+Close.MouseButton1Click:Connect(function()
+	local Confirm = Instance.new("TextLabel", Main)
+	Confirm.Size = UDim2.new(0.9,0,0,80)
+	Confirm.Position = UDim2.new(0.05,0,0.4,0)
+	Confirm.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	Confirm.TextWrapped = true
+	Confirm.Text = "Se fechar o menu, ele não poderá ser aberto novamente.\n\nClique fora para cancelar."
+	Confirm.Font = Enum.Font.GothamBold
+	Confirm.TextSize = 14
+	Confirm.TextColor3 = Color3.new(1,1,1)
+	Confirm.ZIndex = 50
+	Instance.new("UICorner", Confirm)
+
+	Confirm.InputBegan:Wait()
+	ScreenGui:Destroy()
+end)
+
+Minimize.MouseButton1Click:Connect(function()
+	Main.Visible = false
+	Mini.Visible = true
+end)
+
+Mini.MouseButton1Click:Connect(function()
+	Main.Visible = true
+	Mini.Visible = false
 end)
 
 --------------------------------------------------
@@ -313,4 +315,3 @@ Credit.Font = Enum.Font.Gotham
 Credit.TextSize = 12
 Credit.TextColor3 = Color3.fromRGB(150,150,150)
 Credit.BackgroundTransparency = 1
-Credit.ZIndex = 10
