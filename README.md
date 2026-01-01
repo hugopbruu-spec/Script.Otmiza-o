@@ -1,123 +1,111 @@
---====================================================
--- FPS OPTIMIZER v1.2 Beta
--- Criador: Frostzn
---====================================================
+--[[=====================================================
+ FPS OPTIMIZER
+ Criador: Frostzn
+ Versão: 1.2 Beta
+=======================================================]]
 
----------------- SERVICES ----------------
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
-local Lighting = game:GetService("Lighting")
-
+local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
-------------------------------------------------------
--- DRAG FUNCTION (REUTILIZÁVEL)
-------------------------------------------------------
-local function makeDraggable(frame, dragArea)
-	dragArea = dragArea or frame
-	local dragging, dragStart, startPos
-
-	dragArea.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+--------------------------------------------------
+-- DRAG
+--------------------------------------------------
+local function makeDraggable(frame)
+	local dragging, startPos, startInput
+	frame.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
-			dragStart = input.Position
 			startPos = frame.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
+			startInput = i.Position
 		end
 	end)
-
-	UIS.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local delta = input.Position - dragStart
+	UIS.InputChanged:Connect(function(i)
+		if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+			local delta = i.Position - startInput
 			frame.Position = UDim2.new(
 				startPos.X.Scale, startPos.X.Offset + delta.X,
 				startPos.Y.Scale, startPos.Y.Offset + delta.Y
 			)
 		end
 	end)
+	UIS.InputEnded:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
 end
 
-------------------------------------------------------
--- KEY SYSTEM
-------------------------------------------------------
+--------------------------------------------------
+-- KEYS
+--------------------------------------------------
 local ADMIN_KEY = "261120"
-
--- 1000 KEYS FIXAS
 local Keys = {}
 for i = 1,1000 do
-	local key = string.format("FPS-%04d-261120", i)
-	Keys[key] = {uses = 0, max = 3}
+	local k = "FPS-"..string.format("%04d", i).."-KEY"
+	Keys[k] = {uses = 0, max = 3}
 end
 
-local function validateKey(key)
-	if key == ADMIN_KEY then
-		return true, "ADMIN"
-	end
-	if Keys[key] and Keys[key].uses < Keys[key].max then
-		Keys[key].uses += 1
+local function validateKey(k)
+	if k == ADMIN_KEY then return true, "ADMIN" end
+	if Keys[k] and Keys[k].uses < Keys[k].max then
+		Keys[k].uses += 1
 		return true, "USER"
 	end
 	return false
 end
 
-------------------------------------------------------
--- LOADING SCREEN
-------------------------------------------------------
+--------------------------------------------------
+-- LOADING
+--------------------------------------------------
 local loadGui = Instance.new("ScreenGui", PlayerGui)
 local lf = Instance.new("Frame", loadGui)
 lf.Size = UDim2.fromScale(1,1)
 lf.BackgroundColor3 = Color3.fromRGB(10,10,10)
 
-local lt = Instance.new("TextLabel", lf)
-lt.Size = UDim2.new(1,0,0,40)
-lt.Position = UDim2.new(0,0,0.45,0)
-lt.Text = "Carregando... 0%"
-lt.TextColor3 = Color3.fromRGB(0,255,120)
-lt.Font = Enum.Font.GothamBold
-lt.TextSize = 18
-lt.BackgroundTransparency = 1
+local txt = Instance.new("TextLabel", lf)
+txt.Size = UDim2.new(1,0,0,40)
+txt.Position = UDim2.new(0,0,0.45,0)
+txt.Font = Enum.Font.GothamBold
+txt.TextSize = 18
+txt.TextColor3 = Color3.fromRGB(0,255,120)
+txt.BackgroundTransparency = 1
 
-for i=1,100 do
-	lt.Text = "Carregando... "..i.."%"
+for i=0,100 do
+	txt.Text = "Carregando... "..i.."%"
 	task.wait(0.02)
 end
 loadGui:Destroy()
 
-------------------------------------------------------
+--------------------------------------------------
 -- KEY MENU
-------------------------------------------------------
+--------------------------------------------------
 local keyGui = Instance.new("ScreenGui", PlayerGui)
-local kf = Instance.new("Frame", keyGui)
-kf.Size = UDim2.fromOffset(360,220)
-kf.Position = UDim2.new(0.5,-180,0.5,-110)
-kf.BackgroundColor3 = Color3.fromRGB(20,20,20)
-Instance.new("UICorner", kf)
+local frame = Instance.new("Frame", keyGui)
+frame.Size = UDim2.fromOffset(360,220)
+frame.Position = UDim2.new(0.5,-180,0.5,-110)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Instance.new("UICorner", frame)
+makeDraggable(frame)
 
-makeDraggable(kf)
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "🔐 DIGITE A KEY"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.fromRGB(0,255,120)
+title.BackgroundTransparency = 1
 
-local kt = Instance.new("TextLabel", kf)
-kt.Size = UDim2.new(1,0,0,40)
-kt.Text = "🔐 INSIRA A KEY"
-kt.TextColor3 = Color3.fromRGB(0,255,120)
-kt.Font = Enum.Font.GothamBold
-kt.TextSize = 16
-kt.BackgroundTransparency = 1
-
-local box = Instance.new("TextBox", kf)
+local box = Instance.new("TextBox", frame)
 box.Size = UDim2.new(0.9,0,0,36)
 box.Position = UDim2.new(0.05,0,0.4,0)
-box.PlaceholderText = "Digite a key..."
+box.PlaceholderText = "Key..."
 box.BackgroundColor3 = Color3.fromRGB(40,40,40)
 box.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", box)
 
-local btn = Instance.new("TextButton", kf)
+local btn = Instance.new("TextButton", frame)
 btn.Size = UDim2.new(0.9,0,0,36)
 btn.Position = UDim2.new(0.05,0,0.68,0)
 btn.Text = "VALIDAR"
@@ -125,130 +113,60 @@ btn.BackgroundColor3 = Color3.fromRGB(0,170,90)
 btn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", btn)
 
-------------------------------------------------------
+--------------------------------------------------
 -- ADMIN PANEL
-------------------------------------------------------
-local function openAdmin(openOptimizer)
+--------------------------------------------------
+local function openAdmin()
 	local ag = Instance.new("ScreenGui", PlayerGui)
 	local main = Instance.new("Frame", ag)
-	main.Size = UDim2.fromOffset(560,440)
-	main.Position = UDim2.new(0.5,-280,0.5,-220)
+	main.Size = UDim2.fromOffset(600,450)
+	main.Position = UDim2.new(0.5,-300,0.5,-225)
 	main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 	Instance.new("UICorner", main)
-
 	makeDraggable(main)
 
-	local title = Instance.new("TextLabel", main)
-	title.Size = UDim2.new(1,0,0,40)
-	title.Text = "👑 ADMIN PANEL - KEYS"
-	title.TextColor3 = Color3.fromRGB(255,200,0)
-	title.Font = Enum.Font.GothamBold
-	title.TextSize = 16
-	title.BackgroundTransparency = 1
+	local t = Instance.new("TextLabel", main)
+	t.Size = UDim2.new(1,0,0,40)
+	t.Text = "👑 ADMIN - KEYS FIXAS"
+	t.Font = Enum.Font.GothamBold
+	t.TextColor3 = Color3.fromRGB(255,200,0)
+	t.BackgroundTransparency = 1
 
 	local list = Instance.new("ScrollingFrame", main)
 	list.Position = UDim2.new(0,10,0,50)
-	list.Size = UDim2.new(1,-20,1,-140)
-	list.CanvasSize = UDim2.new(0,0,0,0)
+	list.Size = UDim2.new(1,-20,1,-100)
 	list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	list.CanvasSize = UDim2.new(0,0,0,0)
 	list.BackgroundTransparency = 1
 
 	local layout = Instance.new("UIListLayout", list)
 	layout.Padding = UDim.new(0,4)
 
-	local function refreshList()
-		list:ClearAllChildren()
-		layout.Parent = list
-		for k,v in pairs(Keys) do
-			local l = Instance.new("TextLabel", list)
-			l.Size = UDim2.new(1,0,0,22)
-			l.Text = k.." | usos: "..v.uses.."/"..v.max
-			l.TextXAlignment = Left
-			l.Font = Enum.Font.Gotham
-			l.TextSize = 12
-			l.TextColor3 = Color3.new(1,1,1)
-			l.BackgroundTransparency = 1
-		end
+	for k,v in pairs(Keys) do
+		local l = Instance.new("TextLabel", list)
+		l.Size = UDim2.new(1,0,0,22)
+		l.Text = k.." | usos "..v.uses.."/"..v.max
+		l.TextXAlignment = Left
+		l.TextColor3 = Color3.new(1,1,1)
+		l.BackgroundTransparency = 1
 	end
-	refreshList()
-
-	local function adminButton(text,x)
-		local b = Instance.new("TextButton", main)
-		b.Size = UDim2.new(0.18,0,0,32)
-		b.Position = UDim2.new(x,0,1,-40)
-		b.Text = text
-		b.TextSize = 12
-		b.BackgroundColor3 = Color3.fromRGB(60,60,60)
-		b.TextColor3 = Color3.new(1,1,1)
-		Instance.new("UICorner", b)
-		return b
-	end
-
-	local add = adminButton("Adicionar",0.01)
-	local edit = adminButton("Editar",0.21)
-	local remove = adminButton("Remover",0.41)
-	local save = adminButton("Salvar",0.61)
-	local exit = adminButton("Sair",0.81)
-
-	add.MouseButton1Click:Connect(function()
-		local newKey = "FPS-NEW-"..math.random(100000,999999)
-		Keys[newKey] = {uses=0,max=3}
-		refreshList()
-	end)
-
-	edit.MouseButton1Click:Connect(function()
-		-- edição simples (exemplo)
-		for k in pairs(Keys) do
-			Keys[k].max = 5
-			break
-		end
-		refreshList()
-	end)
-
-	remove.MouseButton1Click:Connect(function()
-		for k in pairs(Keys) do
-			Keys[k] = nil
-			break
-		end
-		refreshList()
-	end)
-
-	save.MouseButton1Click:Connect(function()
-		save.Text = "Salvo ✔"
-		task.wait(1)
-		save.Text = "Salvar"
-	end)
-
-	exit.MouseButton1Click:Connect(function()
-		ag:Destroy()
-	end)
 end
 
-------------------------------------------------------
--- OPTIMIZER (PLACEHOLDER DO SEU SCRIPT)
-------------------------------------------------------
-local function openOptimizer()
-	warn("FPS OPTIMIZER ABERTO (aqui entra o script completo de otimização)")
-end
-
-------------------------------------------------------
--- KEY VALIDATION
-------------------------------------------------------
+--------------------------------------------------
+-- VALIDATE
+--------------------------------------------------
 btn.MouseButton1Click:Connect(function()
 	local ok,mode = validateKey(box.Text)
-	if ok then
-		keyGui:Destroy()
-		if mode == "ADMIN" then
-			openAdmin(openOptimizer)
-		else
-			openOptimizer()
-		end
-	else
+	if not ok then
 		btn.Text = "KEY INVÁLIDA"
-		btn.BackgroundColor3 = Color3.fromRGB(170,60,60)
 		task.wait(1)
 		btn.Text = "VALIDAR"
-		btn.BackgroundColor3 = Color3.fromRGB(0,170,90)
 		box.Text = ""
+		return
 	end
+	keyGui:Destroy()
+	if mode == "ADMIN" then
+		openAdmin()
+	end
+	_G.START_OPTIMIZER = true
 end)
