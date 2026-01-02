@@ -1,7 +1,7 @@
 --[[=====================================================
  FPS OPTIMIZER
  Criador: Frostzn
- Versão: 1.2 Beta
+ Versão: 1.2 Beta (Final Corrigida)
 =======================================================]]
 
 ---------------- SERVICES ----------------
@@ -16,7 +16,7 @@ local player = Players.LocalPlayer
 local guiParent = player:WaitForChild("PlayerGui")
 
 --------------------------------------------------
--- DRAG
+-- DRAG FUNCTION
 --------------------------------------------------
 local function makeDraggable(frame)
 	frame.Active = true
@@ -42,12 +42,11 @@ local function makeDraggable(frame)
 end
 
 --------------------------------------------------
--- ORIGINAL VALUES
+-- ORIGINAL SETTINGS
 --------------------------------------------------
 local Original = {
 	Quality = settings().Rendering.QualityLevel,
 	GlobalShadows = Lighting.GlobalShadows,
-	Specular = Lighting.EnvironmentSpecularScale,
 	Water = {
 		WaveSize = Terrain.WaterWaveSize,
 		WaveSpeed = Terrain.WaterWaveSpeed,
@@ -56,7 +55,7 @@ local Original = {
 }
 
 --------------------------------------------------
--- KEYS
+-- KEYS SYSTEM
 --------------------------------------------------
 local ADMIN_KEY = "261120"
 local Keys = {}
@@ -116,9 +115,9 @@ end
 LoadGui:Destroy()
 
 --------------------------------------------------
--- FPS OPTIMIZER
+-- FPS OPTIMIZER MENU
 --------------------------------------------------
-function openFPSOptimizer()
+local function openFPSOptimizer()
 	local gui = Instance.new("ScreenGui", guiParent)
 
 	local Main = Instance.new("Frame", gui)
@@ -128,7 +127,6 @@ function openFPSOptimizer()
 	Instance.new("UICorner", Main)
 	makeDraggable(Main)
 
-	-- HEADER
 	local Header = Instance.new("Frame", Main)
 	Header.Size = UDim2.new(1,0,0,46)
 	Header.BackgroundColor3 = Color3.fromRGB(22,22,22)
@@ -160,7 +158,6 @@ function openFPSOptimizer()
 	Close.TextColor3 = Color3.fromRGB(255,90,90)
 	Close.BackgroundTransparency = 1
 
-	-- MINI BUTTON
 	local Mini = Instance.new("TextButton", gui)
 	Mini.Size = UDim2.fromOffset(50,50)
 	Mini.Position = UDim2.new(0,20,0.5,-25)
@@ -187,12 +184,10 @@ function openFPSOptimizer()
 		gui:Destroy()
 	end)
 
-	-- SCROLL
 	local Scroll = Instance.new("ScrollingFrame", Main)
 	Scroll.Position = UDim2.new(0,10,0,56)
 	Scroll.Size = UDim2.new(1,-20,1,-120)
 	Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	Scroll.CanvasSize = UDim2.new(0,0,0,0)
 	Scroll.BackgroundTransparency = 1
 
 	local Layout = Instance.new("UIListLayout", Scroll)
@@ -228,10 +223,6 @@ function openFPSOptimizer()
 		settings().Rendering.QualityLevel=Original.Quality
 	end)
 
-	toggle("🎯 Limite FPS 120",function()
-		RunService:Set3dRenderingEnabled(true)
-	end)
-
 	toggle("💡 Otimizar Iluminação",function()
 		Lighting.GlobalShadows=false
 	end,function()
@@ -247,21 +238,12 @@ function openFPSOptimizer()
 		Terrain.WaterWaveSpeed=Original.Water.WaveSpeed
 		Terrain.WaterTransparency=Original.Water.Transparency
 	end)
-
-	local Credit = Instance.new("TextLabel", Main)
-	Credit.Size = UDim2.new(1,0,0,20)
-	Credit.Position = UDim2.new(0,0,1,-22)
-	Credit.Text = "Criador: Frostzn"
-	Credit.Font = Enum.Font.Gotham
-	Credit.TextSize = 12
-	Credit.TextColor3 = Color3.fromRGB(150,150,150)
-	Credit.BackgroundTransparency = 1
 end
 
 --------------------------------------------------
--- ADMIN PANEL
+-- ADMIN PANEL (COM BOTÃO FECHAR)
 --------------------------------------------------
-function openAdminPanel()
+local function openAdminPanel()
 	local gui=Instance.new("ScreenGui",guiParent)
 	local f=Instance.new("Frame",gui)
 	f.Size=UDim2.fromOffset(420,520)
@@ -271,12 +253,26 @@ function openAdminPanel()
 	makeDraggable(f)
 
 	local title=Instance.new("TextLabel",f)
-	title.Size=UDim2.new(1,0,0,40)
+	title.Size=UDim2.new(1,-40,0,40)
+	title.Position=UDim2.new(0,10,0,0)
 	title.Text="🔐 ADMIN PANEL"
 	title.Font=Enum.Font.GothamBold
 	title.TextSize=18
 	title.TextColor3=Color3.fromRGB(0,255,140)
 	title.BackgroundTransparency=1
+
+	local close=Instance.new("TextButton",f)
+	close.Size=UDim2.fromOffset(32,32)
+	close.Position=UDim2.new(1,-36,0,4)
+	close.Text="X"
+	close.Font=Enum.Font.GothamBold
+	close.TextSize=16
+	close.TextColor3=Color3.fromRGB(255,80,80)
+	close.BackgroundTransparency=1
+
+	close.MouseButton1Click:Connect(function()
+		gui:Destroy()
+	end)
 
 	local list=Instance.new("ScrollingFrame",f)
 	list.Position=UDim2.new(0,10,0,46)
@@ -299,7 +295,7 @@ function openAdminPanel()
 end
 
 --------------------------------------------------
--- KEY MENU
+-- KEY MENU (LABEL CORRIGIDO)
 --------------------------------------------------
 local KeyGui=Instance.new("ScreenGui",guiParent)
 local f=Instance.new("Frame",KeyGui)
@@ -321,6 +317,7 @@ local box=Instance.new("TextBox",f)
 box.Size=UDim2.new(0.9,0,0,40)
 box.Position=UDim2.new(0.05,0,0,70)
 box.PlaceholderText="FPS-XXXXXX"
+box.Text=""
 box.TextColor3=Color3.new(1,1,1)
 box.PlaceholderColor3=Color3.fromRGB(150,150,150)
 box.BackgroundColor3=Color3.fromRGB(30,30,30)
@@ -329,8 +326,11 @@ Instance.new("UICorner",box)
 local info=Instance.new("TextLabel",f)
 info.Size=UDim2.new(1,0,0,20)
 info.Position=UDim2.new(0,0,0,120)
-info.BackgroundTransparency=1
+info.Text="" -- 🔧 CORRIGIDO (não aparece mais label vermelho)
+info.Font=Enum.Font.Gotham
+info.TextSize=12
 info.TextColor3=Color3.fromRGB(255,80,80)
+info.BackgroundTransparency=1
 
 local btn=Instance.new("TextButton",f)
 btn.Size=UDim2.new(0.5,0,0,36)
@@ -352,7 +352,7 @@ btn.MouseButton1Click:Connect(function()
 		KeyGui:Destroy()
 		openFPSOptimizer()
 	else
-		info.Text="❌ Key inválida"
+		info.Text="❌ Key inválida, tente novamente"
 		box.Text=""
 	end
 end)
