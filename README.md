@@ -356,3 +356,4 @@ Confirm.MouseButton1Click:Connect(function()
 		Input.Text = ""
 	end
 end)
+ 
