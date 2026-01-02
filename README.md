@@ -127,17 +127,17 @@ LoadGui:Destroy()
 local function openFPSOptimizer()
 	local ScreenGui = Instance.new("ScreenGui", guiParent)
 
-	---------------- MAIN ----------------
+	---------------- MAIN (DIMINUÍDO) ----------------
 	local Main = Instance.new("Frame", ScreenGui)
-	Main.Size = UDim2.fromOffset(380,600)
-	Main.Position = UDim2.new(0.5,-190,0.5,-300)
+	Main.Size = UDim2.fromOffset(350,520) -- 🔽 menor
+	Main.Position = UDim2.new(0.5,-175,0.5,-260)
 	Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 	Instance.new("UICorner", Main)
 	makeDraggable(Main)
 
 	---------------- HEADER ----------------
 	local Header = Instance.new("Frame", Main)
-	Header.Size = UDim2.new(1,0,0,46)
+	Header.Size = UDim2.new(1,0,0,44)
 	Header.BackgroundColor3 = Color3.fromRGB(22,22,22)
 
 	local Title = Instance.new("TextLabel", Header)
@@ -145,13 +145,13 @@ local function openFPSOptimizer()
 	Title.Position = UDim2.new(0,10,0,0)
 	Title.Text = "🚀 FPS OPTIMIZER | v1.2 Beta"
 	Title.Font = Enum.Font.GothamBold
-	Title.TextSize = 16
+	Title.TextSize = 15
 	Title.TextColor3 = Color3.fromRGB(0,255,120)
 	Title.BackgroundTransparency = 1
 
 	local Minimize = Instance.new("TextButton", Header)
-	Minimize.Size = UDim2.fromOffset(32,32)
-	Minimize.Position = UDim2.new(1,-70,0,7)
+	Minimize.Size = UDim2.fromOffset(30,30)
+	Minimize.Position = UDim2.new(1,-66,0,7)
 	Minimize.Text = "-"
 	Minimize.Font = Enum.Font.GothamBold
 	Minimize.TextSize = 22
@@ -159,8 +159,8 @@ local function openFPSOptimizer()
 	Minimize.TextColor3 = Color3.new(1,1,1)
 
 	local Close = Instance.new("TextButton", Header)
-	Close.Size = UDim2.fromOffset(32,32)
-	Close.Position = UDim2.new(1,-36,0,7)
+	Close.Size = UDim2.fromOffset(30,30)
+	Close.Position = UDim2.new(1,-34,0,7)
 	Close.Text = "X"
 	Close.Font = Enum.Font.GothamBold
 	Close.TextSize = 16
@@ -169,8 +169,8 @@ local function openFPSOptimizer()
 
 	---------------- SCROLL ----------------
 	local Scroll = Instance.new("ScrollingFrame", Main)
-	Scroll.Position = UDim2.new(0,10,0,56)
-	Scroll.Size = UDim2.new(1,-20,1,-120)
+	Scroll.Position = UDim2.new(0,10,0,54)
+	Scroll.Size = UDim2.new(1,-20,1,-110)
 	Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 	Scroll.ScrollBarImageTransparency = 0.4
 	Scroll.BackgroundTransparency = 1
@@ -182,10 +182,10 @@ local function openFPSOptimizer()
 	local function toggle(text,on,off,locked)
 		local state=false
 		local b=Instance.new("TextButton",Scroll)
-		b.Size=UDim2.new(1,0,0,38)
+		b.Size=UDim2.new(1,0,0,36)
 		b.Text=locked and text or text.." [OFF]"
 		b.Font=Enum.Font.Gotham
-		b.TextSize=14
+		b.TextSize=13
 		b.TextColor3=Color3.new(1,1,1)
 		b.BackgroundColor3=locked and Color3.fromRGB(70,70,70) or Color3.fromRGB(40,40,40)
 		Instance.new("UICorner",b)
@@ -221,11 +221,11 @@ local function openFPSOptimizer()
 
 	---------------- FPS COUNTER ----------------
 	local FPSLabel = Instance.new("TextLabel", ScreenGui)
-	FPSLabel.Size = UDim2.fromOffset(120,30)
+	FPSLabel.Size = UDim2.fromOffset(120,28)
 	FPSLabel.Position = UDim2.new(1,-130,0,10)
 	FPSLabel.Text = "FPS: 0"
 	FPSLabel.Font = Enum.Font.GothamBold
-	FPSLabel.TextSize = 16
+	FPSLabel.TextSize = 15
 	FPSLabel.TextColor3 = Color3.fromRGB(0,255,120)
 	FPSLabel.BackgroundTransparency = 1
 	FPSLabel.Visible = false
@@ -243,7 +243,7 @@ local function openFPSOptimizer()
 		end
 	end)
 
-	---------------- TOGGLES LIST ----------------
+	---------------- TOGGLES ----------------
 	toggle("⚡ FPS Boost",function()
 		settings().Rendering.QualityLevel=Enum.QualityLevel.Level01
 	end,function()
@@ -290,6 +290,16 @@ local function openFPSOptimizer()
 
 	toggle("🔒 Mais funções em breve...",function()end,nil,true)
 
+	---------------- CREDIT ----------------
+	local Credit = Instance.new("TextLabel", Main)
+	Credit.Size = UDim2.new(1,0,0,20)
+	Credit.Position = UDim2.new(0,0,1,-22)
+	Credit.Text = "Criador: Frostzn"
+	Credit.Font = Enum.Font.Gotham
+	Credit.TextSize = 12
+	Credit.TextColor3 = Color3.fromRGB(150,150,150)
+	Credit.BackgroundTransparency = 1
+
 	---------------- MINI BUTTON ----------------
 	local Mini=Instance.new("TextButton",ScreenGui)
 	Mini.Size=UDim2.fromOffset(50,50)
@@ -319,66 +329,13 @@ local function openFPSOptimizer()
 end
 
 --------------------------------------------------
--- ADMIN PANEL
---------------------------------------------------
-local function openAdminPanel()
-	local gui=Instance.new("ScreenGui",guiParent)
-	local f=Instance.new("Frame",gui)
-	f.Size=UDim2.fromOffset(420,520)
-	f.Position=UDim2.new(0.5,-210,0.5,-260)
-	f.BackgroundColor3=Color3.fromRGB(18,18,18)
-	Instance.new("UICorner",f)
-	makeDraggable(f)
-
-	local title=Instance.new("TextLabel",f)
-	title.Size=UDim2.new(1,-40,0,40)
-	title.Position=UDim2.new(0,10,0,0)
-	title.Text="🔐 ADMIN PANEL"
-	title.Font=Enum.Font.GothamBold
-	title.TextSize=18
-	title.TextColor3=Color3.fromRGB(0,255,120)
-	title.BackgroundTransparency=1
-
-	local close=Instance.new("TextButton",f)
-	close.Size=UDim2.fromOffset(32,32)
-	close.Position=UDim2.new(1,-36,0,4)
-	close.Text="X"
-	close.Font=Enum.Font.GothamBold
-	close.TextSize=16
-	close.TextColor3=Color3.fromRGB(255,80,80)
-	close.BackgroundTransparency=1
-	close.MouseButton1Click:Connect(function()
-		gui:Destroy()
-	end)
-
-	local list=Instance.new("ScrollingFrame",f)
-	list.Position=UDim2.new(0,10,0,46)
-	list.Size=UDim2.new(1,-20,1,-56)
-	list.AutomaticCanvasSize=Enum.AutomaticSize.Y
-	list.BackgroundTransparency=1
-
-	local lay=Instance.new("UIListLayout",list)
-	lay.Padding=UDim.new(0,4)
-
-	for k,v in pairs(Keys) do
-		local t=Instance.new("TextLabel",list)
-		t.Size=UDim2.new(1,0,0,22)
-		t.Text=k.." | usos: "..v
-		t.Font=Enum.Font.Gotham
-		t.TextSize=12
-		t.TextColor3=Color3.new(1,1,1)
-		t.BackgroundTransparency=1
-	end
-end
-
---------------------------------------------------
--- KEY MENU (MENOR + STATUS)
+-- KEY MENU
 --------------------------------------------------
 local KeyGui=Instance.new("ScreenGui",guiParent)
 
 local f=Instance.new("Frame",KeyGui)
-f.Size=UDim2.fromOffset(320,200)
-f.Position=UDim2.new(0.5,-160,0.5,-100)
+f.Size=UDim2.fromOffset(300,190)
+f.Position=UDim2.new(0.5,-150,0.5,-95)
 f.BackgroundColor3=Color3.fromRGB(18,18,18)
 Instance.new("UICorner",f)
 makeDraggable(f)
@@ -387,13 +344,13 @@ local t=Instance.new("TextLabel",f)
 t.Size=UDim2.new(1,0,0,36)
 t.Text="🔑 INSIRA SUA KEY"
 t.Font=Enum.Font.GothamBold
-t.TextSize=16
+t.TextSize=15
 t.TextColor3=Color3.fromRGB(0,255,120)
 t.BackgroundTransparency=1
 
 local box=Instance.new("TextBox",f)
-box.Size=UDim2.new(0.9,0,0,36)
-box.Position=UDim2.new(0.05,0,0,55)
+box.Size=UDim2.new(0.9,0,0,34)
+box.Position=UDim2.new(0.05,0,0,52)
 box.PlaceholderText="FPS-XXXXXX"
 box.Text=""
 box.TextColor3=Color3.new(1,1,1)
@@ -401,16 +358,16 @@ box.BackgroundColor3=Color3.fromRGB(30,30,30)
 Instance.new("UICorner",box)
 
 local status=Instance.new("TextLabel",f)
-status.Size=UDim2.new(1,0,0,20)
-status.Position=UDim2.new(0,0,0,100)
+status.Size=UDim2.new(1,0,0,18)
+status.Position=UDim2.new(0,0,0,94)
 status.Text=""
 status.Font=Enum.Font.Gotham
 status.TextSize=12
 status.BackgroundTransparency=1
 
 local btn=Instance.new("TextButton",f)
-btn.Size=UDim2.new(0.5,0,0,32)
-btn.Position=UDim2.new(0.25,0,1,-44)
+btn.Size=UDim2.new(0.5,0,0,30)
+btn.Position=UDim2.new(0.25,0,1,-40)
 btn.Text="Confirmar"
 btn.Font=Enum.Font.GothamBold
 btn.TextSize=14
@@ -422,7 +379,7 @@ btn.MouseButton1Click:Connect(function()
 	local k=box.Text
 	if k==ADMIN_KEY then
 		KeyGui:Destroy()
-		openAdminPanel()
+		openFPSOptimizer()
 	elseif Keys[k] and Keys[k]>0 then
 		Keys[k]-=1
 		status.Text="✅ Key válida!"
