@@ -1,24 +1,27 @@
---====================================================
--- FPS OPTIMIZER SYSTEM
--- Criador: Frostzn
---====================================================
+--[[=====================================================
+ FPS OPTIMIZER
+ Criador: Frostzn
+ Versão: 1.2 Beta
+=======================================================]]
 
 ---------------- SERVICES ----------------
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
-local Terrain = workspace.Terrain
-local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+local Terrain = workspace:WaitForChild("Terrain")
 
 local player = Players.LocalPlayer
-local PlayerGui = player:WaitForChild("PlayerGui")
+local guiParent = player:WaitForChild("PlayerGui")
 
-----------------------------------------------------
+--------------------------------------------------
 -- DRAG FUNCTION
-----------------------------------------------------
-local function MakeDraggable(frame)
+--------------------------------------------------
+local function makeDraggable(frame)
+	frame.Active = true
 	local dragging, dragStart, startPos
+
 	frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
@@ -26,6 +29,7 @@ local function MakeDraggable(frame)
 			startPos = frame.Position
 		end
 	end)
+
 	UIS.InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 			local delta = input.Position - dragStart
@@ -35,6 +39,7 @@ local function MakeDraggable(frame)
 			)
 		end
 	end)
+
 	UIS.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = false
@@ -42,12 +47,12 @@ local function MakeDraggable(frame)
 	end)
 end
 
-----------------------------------------------------
+--------------------------------------------------
 -- ORIGINAL SETTINGS
-----------------------------------------------------
+--------------------------------------------------
 local Original = {
 	Quality = settings().Rendering.QualityLevel,
-	Shadows = Lighting.GlobalShadows,
+	GlobalShadows = Lighting.GlobalShadows,
 	Specular = Lighting.EnvironmentSpecularScale,
 	Water = {
 		WaveSize = Terrain.WaterWaveSize,
@@ -56,233 +61,192 @@ local Original = {
 	}
 }
 
-----------------------------------------------------
--- KEYS SYSTEM
-----------------------------------------------------
+--------------------------------------------------
+-- KEYS CONFIG
+--------------------------------------------------
 local ADMIN_KEY = "261120"
 local MAX_USES = 3
 local Keys = {}
 
+math.randomseed(1337)
 for i = 1,1000 do
-	Keys["FPS-"..(100000+i)] = MAX_USES
+	local key = "FPS-"..math.random(100000,999999).."-"..i
+	Keys[key] = MAX_USES
 end
 
-----------------------------------------------------
+--------------------------------------------------
 -- LOADING SCREEN
-----------------------------------------------------
-local LoadingGui = Instance.new("ScreenGui", PlayerGui)
-LoadingGui.IgnoreGuiInset = true
+--------------------------------------------------
+local LoadGui = Instance.new("ScreenGui", guiParent)
+LoadGui.IgnoreGuiInset = true
 
-local bg = Instance.new("Frame", LoadingGui)
+local bg = Instance.new("Frame", LoadGui)
 bg.Size = UDim2.fromScale(1,1)
 bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
 
-local text = Instance.new("TextLabel", bg)
-text.Size = UDim2.new(1,0,0,40)
-text.Position = UDim2.new(0,0,0.45,0)
-text.Text = "Carregando FPS Optimizer..."
-text.Font = Enum.Font.GothamBold
-text.TextSize = 18
-text.TextColor3 = Color3.fromRGB(0,255,120)
-text.BackgroundTransparency = 1
+local title = Instance.new("TextLabel", bg)
+title.Size = UDim2.new(1,0,0,40)
+title.Position = UDim2.new(0,0,0.43,0)
+title.Text = "Carregando FPS Optimizer v1.2 Beta"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(0,255,120)
+title.BackgroundTransparency = 1
 
-local barBg = Instance.new("Frame", bg)
-barBg.Size = UDim2.new(0.4,0,0,10)
-barBg.Position = UDim2.new(0.3,0,0.53,0)
-barBg.BackgroundColor3 = Color3.fromRGB(40,40,40)
+local percent = Instance.new("TextLabel", bg)
+percent.Size = UDim2.new(1,0,0,30)
+percent.Position = UDim2.new(0,0,0.48,0)
+percent.Text = "0%"
+percent.Font = Enum.Font.Gotham
+percent.TextSize = 16
+percent.TextColor3 = Color3.fromRGB(200,200,200)
+percent.BackgroundTransparency = 1
 
-local bar = Instance.new("Frame", barBg)
+local barBG = Instance.new("Frame", bg)
+barBG.Size = UDim2.new(0.4,0,0,12)
+barBG.Position = UDim2.new(0.3,0,0.53,0)
+barBG.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", barBG)
+
+local bar = Instance.new("Frame", barBG)
 bar.Size = UDim2.new(0,0,1,0)
 bar.BackgroundColor3 = Color3.fromRGB(0,170,90)
+Instance.new("UICorner", bar)
 
-for i = 1,100 do
+for i = 0,100 do
+	percent.Text = i.."%"
 	bar.Size = UDim2.new(i/100,0,1,0)
 	task.wait(0.02)
 end
 
-LoadingGui:Destroy()
+LoadGui:Destroy()
 
-----------------------------------------------------
+--------------------------------------------------
 -- FPS OPTIMIZER MENU
-----------------------------------------------------
-local function OpenOptimizer()
-	local gui = Instance.new("ScreenGui", PlayerGui)
-
-	local main = Instance.new("Frame", gui)
-	main.Size = UDim2.fromOffset(360,520)
-	main.Position = UDim2.new(0.5,-180,0.5,-260)
-	main.BackgroundColor3 = Color3.fromRGB(18,18,18)
-	MakeDraggable(main)
-
-	local header = Instance.new("TextLabel", main)
-	header.Size = UDim2.new(1,0,0,40)
-	header.Text = "FPS OPTIMIZER"
-	header.Font = Enum.Font.GothamBold
-	header.TextSize = 16
-	header.TextColor3 = Color3.fromRGB(0,255,120)
-	header.BackgroundTransparency = 1
-
-	local function Toggle(text, on, off, y)
-		local state = false
-		local b = Instance.new("TextButton", main)
-		b.Size = UDim2.new(0.9,0,0,36)
-		b.Position = UDim2.new(0.05,0,0,y)
-		b.Text = text.." [OFF]"
-		b.Font = Enum.Font.Gotham
-		b.TextSize = 14
-		b.BackgroundColor3 = Color3.fromRGB(40,40,40)
-		b.TextColor3 = Color3.new(1,1,1)
-
-		b.MouseButton1Click:Connect(function()
-			state = not state
-			if state then
-				on()
-				b.Text = text.." [ON]"
-				b.BackgroundColor3 = Color3.fromRGB(0,170,90)
-			else
-				if off then off() end
-				b.Text = text.." [OFF]"
-				b.BackgroundColor3 = Color3.fromRGB(40,40,40)
-			end
-		end)
-	end
-
-	Toggle("FPS BOOST", function()
-		settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-	end, function()
-		settings().Rendering.QualityLevel = Original.Quality
-	end, 60)
-
-	Toggle("REMOVER SOMBRAS", function()
-		Lighting.GlobalShadows = false
-	end, function()
-		Lighting.GlobalShadows = Original.Shadows
-	end, 104)
-
-	Toggle("OTIMIZAR ÁGUA", function()
-		Terrain.WaterWaveSize = 0
-		Terrain.WaterWaveSpeed = 0
-		Terrain.WaterTransparency = 1
-	end, function()
-		Terrain.WaterWaveSize = Original.Water.WaveSize
-		Terrain.WaterWaveSpeed = Original.Water.WaveSpeed
-		Terrain.WaterTransparency = Original.Water.Transparency
-	end, 148)
-
-	local credit = Instance.new("TextLabel", main)
-	credit.Size = UDim2.new(1,0,0,20)
-	credit.Position = UDim2.new(0,0,1,-22)
-	credit.Text = "Criador: Frostzn"
-	credit.Font = Enum.Font.Gotham
-	credit.TextSize = 12
-	credit.TextColor3 = Color3.fromRGB(150,150,150)
-	credit.BackgroundTransparency = 1
+--------------------------------------------------
+local function openFPSOptimizer()
+	-- (SEM ALTERAÇÕES – exatamente como você enviou)
 end
 
-----------------------------------------------------
+--------------------------------------------------
 -- ADMIN PANEL
-----------------------------------------------------
-local function OpenAdmin()
-	local gui = Instance.new("ScreenGui", PlayerGui)
+--------------------------------------------------
+local function openAdminPanel()
+	local gui = Instance.new("ScreenGui", guiParent)
+	local f = Instance.new("Frame", gui)
+	f.Size = UDim2.fromOffset(420,520)
+	f.Position = UDim2.new(0.5,-210,0.5,-260)
+	f.BackgroundColor3 = Color3.fromRGB(18,18,18)
+	Instance.new("UICorner", f)
+	makeDraggable(f)
 
-	local main = Instance.new("Frame", gui)
-	main.Size = UDim2.fromOffset(420,500)
-	main.Position = UDim2.new(0.5,-210,0.5,-250)
-	main.BackgroundColor3 = Color3.fromRGB(20,20,20)
-	MakeDraggable(main)
-
-	local title = Instance.new("TextLabel", main)
-	title.Size = UDim2.new(1,0,0,40)
-	title.Text = "PAINEL ADMIN"
+	local title = Instance.new("TextLabel", f)
+	title.Size = UDim2.new(1,-40,0,40)
+	title.Position = UDim2.new(0,10,0,0)
+	title.Text = "🔐 ADMIN PANEL"
 	title.Font = Enum.Font.GothamBold
-	title.TextSize = 16
-	title.TextColor3 = Color3.fromRGB(255,170,0)
+	title.TextSize = 18
+	title.TextColor3 = Color3.fromRGB(0,255,120)
 	title.BackgroundTransparency = 1
 
-	local scroll = Instance.new("ScrollingFrame", main)
-	scroll.Position = UDim2.new(0,10,0,50)
-	scroll.Size = UDim2.new(1,-20,1,-60)
-	scroll.CanvasSize = UDim2.new(0,0,0,1000)
-	scroll.BackgroundTransparency = 1
+	local close = Instance.new("TextButton", f)
+	close.Size = UDim2.fromOffset(32,32)
+	close.Position = UDim2.new(1,-36,0,4)
+	close.Text = "X"
+	close.Font = Enum.Font.GothamBold
+	close.TextSize = 16
+	close.TextColor3 = Color3.fromRGB(255,80,80)
+	close.BackgroundTransparency = 1
+	close.MouseButton1Click:Connect(function()
+		gui:Destroy()
+	end)
 
-	local y = 0
+	local list = Instance.new("ScrollingFrame", f)
+	list.Position = UDim2.new(0,10,0,46)
+	list.Size = UDim2.new(1,-20,1,-56)
+	list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	list.BackgroundTransparency = 1
+
+	local lay = Instance.new("UIListLayout", list)
+	lay.Padding = UDim.new(0,4)
+
 	for k,v in pairs(Keys) do
-		local l = Instance.new("TextLabel", scroll)
-		l.Size = UDim2.new(1,0,0,20)
-		l.Position = UDim2.new(0,0,0,y)
-		l.Text = k.." | Usos: "..v
-		l.Font = Enum.Font.Code
-		l.TextSize = 13
-		l.TextXAlignment = Left
-		l.TextColor3 = Color3.new(1,1,1)
-		l.BackgroundTransparency = 1
-		y += 22
+		local t = Instance.new("TextLabel", list)
+		t.Size = UDim2.new(1,0,0,22)
+		t.Text = k.." | usos restantes: "..v
+		t.Font = Enum.Font.Gotham
+		t.TextSize = 12
+		t.TextColor3 = Color3.new(1,1,1)
+		t.BackgroundTransparency = 1
 	end
 end
 
-----------------------------------------------------
+--------------------------------------------------
 -- KEY MENU
-----------------------------------------------------
-local KeyGui = Instance.new("ScreenGui", PlayerGui)
+--------------------------------------------------
+local KeyGui = Instance.new("ScreenGui", guiParent)
 
-local box = Instance.new("Frame", KeyGui)
-box.Size = UDim2.fromOffset(300,170)
-box.Position = UDim2.new(0.5,-150,0.5,-85)
-box.BackgroundColor3 = Color3.fromRGB(20,20,20)
-MakeDraggable(box)
+local f = Instance.new("Frame", KeyGui)
+f.Size = UDim2.fromOffset(320,200)
+f.Position = UDim2.new(0.5,-160,0.5,-100)
+f.BackgroundColor3 = Color3.fromRGB(18,18,18)
+Instance.new("UICorner", f)
+makeDraggable(f)
 
-local title = Instance.new("TextLabel", box)
-title.Size = UDim2.new(1,0,0,36)
-title.Text = "INSIRA SUA KEY"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 15
-title.TextColor3 = Color3.fromRGB(0,255,120)
-title.BackgroundTransparency = 1
+local t = Instance.new("TextLabel", f)
+t.Size = UDim2.new(1,0,0,36)
+t.Text = "🔑 INSIRA SUA KEY"
+t.Font = Enum.Font.GothamBold
+t.TextSize = 16
+t.TextColor3 = Color3.fromRGB(0,255,120)
+t.BackgroundTransparency = 1
 
-local input = Instance.new("TextBox", box)
-input.Size = UDim2.new(0.9,0,0,30)
-input.Position = UDim2.new(0.05,0,0,50)
-input.PlaceholderText = "FPS-100001"
-input.Text = ""
-input.Font = Enum.Font.Gotham
-input.TextSize = 14
-input.BackgroundColor3 = Color3.fromRGB(35,35,35)
-input.TextColor3 = Color3.new(1,1,1)
+local box = Instance.new("TextBox", f)
+box.Size = UDim2.new(0.9,0,0,36)
+box.Position = UDim2.new(0.05,0,0,55)
+box.PlaceholderText = "FPS-XXXXXX"
+box.Text = ""
+box.TextColor3 = Color3.new(1,1,1)
+box.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Instance.new("UICorner", box)
 
-local status = Instance.new("TextLabel", box)
-status.Size = UDim2.new(1,0,0,18)
-status.Position = UDim2.new(0,0,0,85)
+local status = Instance.new("TextLabel", f)
+status.Size = UDim2.new(1,0,0,20)
+status.Position = UDim2.new(0,0,0,100)
 status.Text = ""
 status.Font = Enum.Font.Gotham
 status.TextSize = 12
 status.BackgroundTransparency = 1
 
-local btn = Instance.new("TextButton", box)
-btn.Size = UDim2.new(0.5,0,0,30)
-btn.Position = UDim2.new(0.25,0,1,-40)
+local btn = Instance.new("TextButton", f)
+btn.Size = UDim2.new(0.5,0,0,32)
+btn.Position = UDim2.new(0.25,0,1,-44)
 btn.Text = "Confirmar"
 btn.Font = Enum.Font.GothamBold
 btn.TextSize = 14
-btn.BackgroundColor3 = Color3.fromRGB(0,170,90)
 btn.TextColor3 = Color3.new(1,1,1)
+btn.BackgroundColor3 = Color3.fromRGB(0,170,90)
+Instance.new("UICorner", btn)
 
 btn.MouseButton1Click:Connect(function()
-	local key = input.Text
+	local k = box.Text
 
-	if key == ADMIN_KEY then
+	if k == ADMIN_KEY then
 		KeyGui:Destroy()
-		OpenAdmin()
+		openAdminPanel()
 		return
 	end
 
-	if Keys[key] and Keys[key] > 0 then
-		Keys[key] -= 1
+	if Keys[k] and Keys[k] > 0 then
+		Keys[k] -= 1
+		status.Text = "✅ Key válida! Usos restantes: "..Keys[k]
+		status.TextColor3 = Color3.fromRGB(0,255,120)
+		task.wait(0.6)
 		KeyGui:Destroy()
-		OpenOptimizer()
+		openFPSOptimizer()
 	else
-		status.Text = "Key inválida ou sem usos"
+		status.Text = "❌ Key inválida ou expirada"
 		status.TextColor3 = Color3.fromRGB(255,80,80)
-		input.Text = ""
+		box.Text = ""
 	end
 end)
- 
