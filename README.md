@@ -8,7 +8,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
-local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
 local Terrain = workspace:WaitForChild("Terrain")
 
@@ -62,7 +61,7 @@ local Original = {
 }
 
 --------------------------------------------------
--- KEYS CONFIG
+-- KEYS
 --------------------------------------------------
 local ADMIN_KEY = "261120"
 local MAX_USES = 3
@@ -122,10 +121,134 @@ end
 LoadGui:Destroy()
 
 --------------------------------------------------
--- FPS OPTIMIZER MENU
+-- FPS OPTIMIZER MENU (CORRIGIDO)
 --------------------------------------------------
 local function openFPSOptimizer()
-	-- (SEM ALTERAÇÕES – exatamente como você enviou)
+	local ScreenGui = Instance.new("ScreenGui", guiParent)
+
+	local Main = Instance.new("Frame", ScreenGui)
+	Main.Size = UDim2.fromOffset(360,520)
+	Main.Position = UDim2.new(0.5,-180,0.5,-260)
+	Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+	Instance.new("UICorner", Main)
+	makeDraggable(Main)
+
+	local Header = Instance.new("Frame", Main)
+	Header.Size = UDim2.new(1,0,0,44)
+	Header.BackgroundColor3 = Color3.fromRGB(22,22,22)
+
+	local Title = Instance.new("TextLabel", Header)
+	Title.Size = UDim2.new(1,-90,1,0)
+	Title.Position = UDim2.new(0,10,0,0)
+	Title.Text = "🚀 FPS OPTIMIZER | Frostzn"
+	Title.Font = Enum.Font.GothamBold
+	Title.TextSize = 16
+	Title.TextColor3 = Color3.fromRGB(0,255,120)
+	Title.BackgroundTransparency = 1
+
+	local Minimize = Instance.new("TextButton", Header)
+	Minimize.Size = UDim2.fromOffset(32,32)
+	Minimize.Position = UDim2.new(1,-70,0,6)
+	Minimize.Text = "-"
+	Minimize.Font = Enum.Font.GothamBold
+	Minimize.TextSize = 22
+	Minimize.BackgroundTransparency = 1
+	Minimize.TextColor3 = Color3.new(1,1,1)
+
+	local Close = Instance.new("TextButton", Header)
+	Close.Size = UDim2.fromOffset(32,32)
+	Close.Position = UDim2.new(1,-36,0,6)
+	Close.Text = "X"
+	Close.Font = Enum.Font.GothamBold
+	Close.TextSize = 16
+	Close.TextColor3 = Color3.fromRGB(255,80,80)
+	Close.BackgroundTransparency = 1
+
+	local Scroll = Instance.new("ScrollingFrame", Main)
+	Scroll.Position = UDim2.new(0,10,0,54)
+	Scroll.Size = UDim2.new(1,-20,1,-64)
+	Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	Scroll.CanvasSize = UDim2.new(0,0,0,0)
+	Scroll.ScrollBarImageTransparency = 0.4
+	Scroll.BackgroundTransparency = 1
+
+	local Layout = Instance.new("UIListLayout", Scroll)
+	Layout.Padding = UDim.new(0,8)
+
+	local function toggle(text,on,off)
+		local state=false
+		local b=Instance.new("TextButton",Scroll)
+		b.Size=UDim2.new(1,0,0,38)
+		b.Text=text.." [OFF]"
+		b.Font=Enum.Font.Gotham
+		b.TextSize=14
+		b.TextColor3=Color3.new(1,1,1)
+		b.BackgroundColor3=Color3.fromRGB(40,40,40)
+		Instance.new("UICorner",b)
+
+		b.MouseButton1Click:Connect(function()
+			state=not state
+			if state then
+				on()
+				b.Text=text.." [ON]"
+				b.BackgroundColor3=Color3.fromRGB(0,160,90)
+			else
+				if off then off() end
+				b.Text=text.." [OFF]"
+				b.BackgroundColor3=Color3.fromRGB(40,40,40)
+			end
+		end)
+	end
+
+	toggle("⚡ FPS Boost",function()
+		settings().Rendering.QualityLevel=Enum.QualityLevel.Level01
+	end,function()
+		settings().Rendering.QualityLevel=Original.Quality
+	end)
+
+	toggle("💡 Otimizar Iluminação",function()
+		Lighting.GlobalShadows=false
+		Lighting.EnvironmentSpecularScale=0
+	end,function()
+		Lighting.GlobalShadows=Original.GlobalShadows
+		Lighting.EnvironmentSpecularScale=Original.Specular
+	end)
+
+	toggle("🌊 Otimizar Água",function()
+		Terrain.WaterWaveSize=0
+		Terrain.WaterWaveSpeed=0
+		Terrain.WaterTransparency=1
+	end,function()
+		Terrain.WaterWaveSize=Original.Water.WaveSize
+		Terrain.WaterWaveSpeed=Original.Water.WaveSpeed
+		Terrain.WaterTransparency=Original.Water.Transparency
+	end)
+
+	local Mini = Instance.new("TextButton", ScreenGui)
+	Mini.Size = UDim2.fromOffset(50,50)
+	Mini.Position = UDim2.new(0,20,0.5,-25)
+	Mini.Text = "FPS"
+	Mini.Font = Enum.Font.GothamBold
+	Mini.TextSize = 16
+	Mini.TextColor3 = Color3.new(1,1,1)
+	Mini.BackgroundColor3 = Color3.fromRGB(0,170,90)
+	Mini.Visible = false
+	Instance.new("UICorner", Mini)
+	makeDraggable(Mini)
+
+	Minimize.MouseButton1Click:Connect(function()
+		Main.Visible=false
+		Mini.Visible=true
+	end)
+
+	Mini.MouseButton1Click:Connect(function()
+		Main.Visible=true
+		Mini.Visible=false
+	end)
+
+	Close.MouseButton1Click:Connect(function()
+		ScreenGui:Destroy()
+	end)
 end
 
 --------------------------------------------------
@@ -234,10 +357,7 @@ btn.MouseButton1Click:Connect(function()
 	if k == ADMIN_KEY then
 		KeyGui:Destroy()
 		openAdminPanel()
-		return
-	end
-
-	if Keys[k] and Keys[k] > 0 then
+	elseif Keys[k] and Keys[k] > 0 then
 		Keys[k] -= 1
 		status.Text = "✅ Key válida! Usos restantes: "..Keys[k]
 		status.TextColor3 = Color3.fromRGB(0,255,120)
